@@ -9,6 +9,7 @@
         public decimal Experience { get; private set; }
         public bool Type { get; private set; }
         public bool Status { get; private set; }
+        public int CarId { get; private set; }
         public int TeamId { get; private set; }
 
         public Engineer
