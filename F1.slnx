@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="F1.CompetitionAPI/F1.CompetitionAPI.csproj" />
+  <Project Path="F1.EngineeringAPI/F1.EngineeringAPI.csproj" />
+  <Project Path="F1.Models/F1.Models.csproj" />
+  <Project Path="F1.RaceAPI/F1.RaceAPI.csproj" />
+  <Project Path="F1.TeamAPI/F1.TeamAPI.csproj" />
+</Solution>
