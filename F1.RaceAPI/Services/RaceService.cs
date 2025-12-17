@@ -1,5 +1,10 @@
-﻿using F1.RaceAPI.Repositories.Interfaces;
+﻿using F1.Models.DTOs.HistoryDTOs;
+using F1.RaceAPI.Repositories.Interfaces;
 using F1.RaceAPI.Services.Interfaces;
+using RabbitMQ.Client;
+using RabbitMQ.Client.Events;
+using System.Text;
+using System.Text.Json;
 
 namespace F1.RaceAPI.Services
 {
@@ -12,6 +17,42 @@ namespace F1.RaceAPI.Services
         {
             _logger = logger;
             _raceRepository = raceRepository;
+        }
+
+        public async Task EventWorkerAsync(HistoryDTO history)
+        {
+            var factory = new ConnectionFactory { HostName = "localhost" };
+
+            using var connection = await factory.CreateConnectionAsync();
+
+            using var channel = await connection.CreateChannelAsync();
+
+            await channel.QueueDeclareAsync(queue: "History", 
+                                            durable: false, 
+                                            exclusive: false, 
+                                            autoDelete: false,
+                                            arguments: null);
+
+            var consumer = new AsyncEventingBasicConsumer(channel);
+
+            consumer.ReceivedAsync += async (model, ea) =>
+            {
+                var body = ea.Body.ToArray();
+
+                var message = Encoding.UTF8.GetString(body);
+
+                var history = JsonSerializer.Deserialize<HistoryDTO>(message);
+
+                // TODO: pick wich Circuit are we racing on from Wayne API
+
+                await _raceRepository.SaveEventAsync(history);
+            };
+
+            await channel.BasicConsumeAsync(queue: "History", 
+                                            autoAck: true, 
+                                            consumer: consumer);
+
+
         }
     }
 }
