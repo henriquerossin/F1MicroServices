@@ -2,5 +2,6 @@
 {
     public interface IEngineeringService
     {
+        Task UpdatingInfosForEvent();
     }
 }

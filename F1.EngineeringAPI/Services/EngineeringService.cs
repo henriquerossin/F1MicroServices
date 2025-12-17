@@ -1,5 +1,6 @@
 ﻿using F1.EngineeringAPI.Services.Interfaces;
 using F1.Models.DTOs.EngineeringDTOs;
+using F1.Models.DTOs.HistoryDTOs;
 using Microsoft.AspNetCore.Connections;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -10,6 +11,13 @@ namespace F1.EngineeringAPI.Services
 {
     public class EngineeringService : IEngineeringService
     {
+        public readonly ILogger<EngineeringService> _logger;
+
+        public EngineeringService(ILogger<EngineeringService> logger)
+        {
+            _logger = logger;
+        }
+
         public async Task UpdatingInfosForEvent()
         {
             try
@@ -32,25 +40,28 @@ namespace F1.EngineeringAPI.Services
                 {
                     var body = ea.Body.ToArray();
                     var message = Encoding.UTF8.GetString(body);
-                    var info = JsonSerializer.Deserialize<EngineeringResponseDTO>(message);
-
+                    var info = JsonSerializer.Deserialize<HistoryDTO>(message);
+                    
                     //realizando cálculos das atualizações do ca, cp e handicap
-                    decimal newCa, newCp, newHandicap, randomCa, randomCp;
+                    decimal newCaFirstCar, newCpFirstCar, newHandicapFirstPilot, randomCaFirstCar, randomCpFirstCar;
+                    decimal newCaSecondCar, newCpSecondCar, newHandicapSecondPilot, randomCaSecondCar, randomCpSecondCar;
+
                     Random random = new Random();
 
-                    randomCa = (decimal)((random.NextDouble() * 2) - 1);
-                    randomCp = (decimal)((random.NextDouble() * 2) - 1);
+                    randomCaFirstCar = (decimal)((random.NextDouble() * 2) - 1);
+                    randomCpFirstCar = (decimal)((random.NextDouble() * 2) - 1);
 
 
-                    newCa = info.AerodynamicCoefficent + (info.EngineerAerodynamicExperience * randomCa);
-                    newCp = info.PowerCoefficient + (info.EngineerPowerExperience * randomCp);
+                    newCaFirstCar = info.FirstCar.CarAerodynamicCoefficent + (info.EngineerAerodynamicExperience * randomCaFirstCar);
+                    newCpFirstCar = info.FirstCar.CarPowerCoefficient + (info.EngineerPowerExperience * randomCpFirstCar);
 
-                    newHandicap = info.Handicap - (info.PilotExperience * 0.5m);
+                    newHandicapFirstPilot = info.FirstPilot.PilotHandicap - (info.FirstPilot.Experience * 0.5m);
 
                     //realizando o cálculo do PD caso for evento de qualificação ou corrida
                     decimal pd = 0m, randomPd;
-                    if (info.Type == 4 || info.Type == 5)
+                    if (info. == 4 || info.Type == 5)
                     {
+
 
                         randomPd = (decimal)(random.Next(1, 11));
 
@@ -92,7 +103,7 @@ namespace F1.EngineeringAPI.Services
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message);
+                _logger.LogError(ex, "An error occurred while updating engineering infos for event.");
             }
         }
     }
