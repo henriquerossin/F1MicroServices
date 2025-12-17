@@ -18,7 +18,7 @@ namespace F1.RaceAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<HistoryDTO>> PostHistoryAsync()
+        public async Task<IActionResult> PostHistoryAsync()
         {
             // Implementation logic here
             return Ok(/*Object here*/);

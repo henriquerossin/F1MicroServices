@@ -5,5 +5,7 @@
         public int PilotId { get; init; }
         public int PilotName { get; init; }
         public decimal PilotHandicap { get; init; }
+        public int PilotPoints { get; init; }
+        public int PilotPlacement { get; init; }
     }
 }
