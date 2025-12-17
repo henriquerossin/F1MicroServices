@@ -9,6 +9,6 @@
         public bool Type { get; init; }
         public bool Status { get; init; }
         public int TeamId { get; init; }
-        public bool InActive { get; init; } = true;
+        public bool IsActive { get; init; } = true;
     }
 }

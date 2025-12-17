@@ -19,7 +19,7 @@ namespace F1.TeamAPI.Repositories
         {
             try
             {
-                var sql = @"SELECT Name, Points, Placement 
+                var sql = @"SELECT Id, Name, Points, Placement 
                            FROM Team 
                            WHERE IsActive = 1;";
                 var teams = (await _connection.QueryAsync<TeamResponseDTO>(sql)).ToList();
@@ -37,10 +37,10 @@ namespace F1.TeamAPI.Repositories
         {
             try
             {
-                var sql = @"INSERT INTO TEAM (Name, Points, Placement)
-                          VALUES (@Name, @Points, @Placement)";
+                var sql = @"INSERT INTO Team (Name, Points, Placement, IsActive)
+                          VALUES (@Name, @Points, @Placement, @IsAcitive)";
 
-                await _connection.ExecuteAsync(sql, new { dto.Name, dto.Points, dto.Placement }); //usuario so informa o nome, o resto vai 0 pelo contrutor
+                await _connection.ExecuteAsync(sql, new { dto.Name, dto.Points, dto.Placement, dto.IsActive }); //usuario so informa o nome, o resto vai 0 pelo contrutor
             }
             catch (Exception ex)
             {

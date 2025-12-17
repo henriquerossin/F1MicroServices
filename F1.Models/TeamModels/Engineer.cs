@@ -20,6 +20,7 @@
             decimal experience,
             bool type,
             bool status,
+            int carId,
             int teamId)
         {
             Name = name;
@@ -29,6 +30,7 @@
             Type = type;
             Status = status;
             TeamId = teamId;
+            CarId = carId;
             IsActive = true;
         }
     }
