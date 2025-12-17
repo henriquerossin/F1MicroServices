@@ -4,6 +4,7 @@ namespace F1.RaceAPI.Services.Interfaces
 {
     public interface IRaceService
     {
-        Task SaveEventAsync();
+        Task EventWorkerAsync();
+
     }
 }
