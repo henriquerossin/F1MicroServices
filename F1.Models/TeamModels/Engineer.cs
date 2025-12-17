@@ -11,6 +11,7 @@
         public bool Status { get; private set; }
         public int CarId { get; private set; }
         public int TeamId { get; private set; }
+        public bool IsActive { get; private set; }
 
         public Engineer
             (string name,
@@ -28,6 +29,7 @@
             Type = type;
             Status = status;
             TeamId = teamId;
+            IsActive = true;
         }
     }
 }
