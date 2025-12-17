@@ -1,4 +1,5 @@
-﻿using System;
+﻿using F1.Models.TeamModels;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,22 +10,28 @@ namespace F1.Models.DTOs.EngineeringDTOs
     public class EngineeringResponseDTO
     {
         //Car
-        public int CarId { get; private set; }
-        public decimal AerodynamicCoefficent { get; private set; }
-        public decimal PowerCoefficient { get; private set; }
-        public int CarPilotId { get; private set; }
+        public int CarId { get; init; }
+        public decimal AerodynamicCoefficent { get; init; }
+        public decimal PowerCoefficient { get; init; }
+        public int CarPilotId { get; init; }
 
         //Engineer
-        public int EngineerAerodynamicId { get; private set; }
-        public decimal EngineerAerodynamicExperience { get; private set; }
-        public int EngineerPowerId { get; private set; }
-        public decimal EngineerPowerExperience { get; private set; }
-        public int EngineerCarId { get; private set; }
+        public int EngineerAerodynamicId { get; init; }
+        public decimal EngineerAerodynamicExperience { get; init; }
+        public int EngineerPowerId { get; init; }
+        public decimal EngineerPowerExperience { get; init; }
+        public int EngineerCarId { get; init; }
 
         //Pilot
-        public int PilotId { get; private set; }
-        public decimal PilotExperience { get; private set; }
-        public decimal Handicap { get; private set; }
+        public int PilotId { get; init; }
+        public decimal PilotExperience { get; init; }
+        public decimal Handicap { get; init; }
+
+        //Type of Event
+        public int Type { get; init; }
+
+        //PD
+        public decimal PD { get; init; }
 
 
     }
