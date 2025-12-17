@@ -1,7 +1,6 @@
 ﻿using Microsoft.Data.SqlClient;
-using Microsoft.Extensions.Options;
 
-namespace F1.RaceAPI.Data
+namespace F1.TeamAPI.Data
 {
     public class ConnectionDB
     {
@@ -9,11 +8,11 @@ namespace F1.RaceAPI.Data
 
         public ConnectionDB(IConfiguration c)
         {
-            _connectionString = c.GetConnectionString("DefaultCOnnection");
+            _connectionString = c.GetConnectionString("DefaultConnection");
         }
-        public SlqConnection GetSlqConnection()
+        public SqlConnection GetSlqConnection()
         {
-            return new SlqConnection(_connectionString);
+            return new SqlConnection(_connectionString);
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿using Dapper;
 using F1.Models.DTOs.TeamDTOs.TeamDTOs;
-using F1.RaceAPI.Data;
+using F1.TeamAPI.Data;
 using F1.TeamAPI.Repositories.Interfaces;
 using Microsoft.Data.SqlClient;
 
@@ -35,12 +35,14 @@ namespace F1.TeamAPI.Repositories
 
         public async Task CreateTeamAsync(TeamRequestDTO dto)
         {
-            try{
+            try
+            {
                 var sql = @"INSERT INTO TEAM (Name, Points, Placement)
                           VALUES (@Name, @Points, @Placement)";
 
-            await _connection.ExecuteAsync(sql, new { dto.Name, dto.Points, dto.Placement}); //usuario so informa o nome, o resto vai 0 pelo contrutor
-            } catch
+                await _connection.ExecuteAsync(sql, new { dto.Name, dto.Points, dto.Placement }); //usuario so informa o nome, o resto vai 0 pelo contrutor
+            }
+            catch
             {
 
             }
@@ -56,6 +58,7 @@ namespace F1.TeamAPI.Repositories
             throw new NotImplementedException();
         }
 
-        public async Task<>
+  
     }
 }
+

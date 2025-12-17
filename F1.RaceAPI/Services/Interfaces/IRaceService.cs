@@ -4,6 +4,6 @@ namespace F1.RaceAPI.Services.Interfaces
 {
     public interface IRaceService
     {
-        Task SaveEventAsync(HistoryDTO history);
+        Task SaveEventAsync();
     }
 }
