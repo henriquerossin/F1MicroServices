@@ -4,11 +4,10 @@ namespace F1.TeamAPI.Repositories.Interfaces
 {
     public interface IEngineerRepository
     {
-        Task<List<EngineerResponseDTO>> GetAllTeamsAsync();
-        Task<EngineerResponseDTO> GetTeamByIdAsync(int id);
-        Task<EngineerResponseDTO> GetTeamByNameAsync(string name);
-        Task CreateTeamAsync(EngineerRequestDTO dto);
-        Task UpdateTeamAsync(int id);
-        Task DeleteTeamAsync(int id);
+        Task<List<EngineerResponseDTO>> GetAllEngineersAsync();
+        Task<EngineerResponseDTO> GetEngineersByTeamAsync(int id);
+        Task CreateEngineerAsync(EngineerRequestDTO dto);
+        Task UpdateEngineerAsync(int id);
+        Task DeleteEngineerAsync(int id);
     }
 }

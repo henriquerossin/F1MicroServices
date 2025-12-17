@@ -4,11 +4,10 @@ namespace F1.TeamAPI.Repositories.Interfaces
 {
     public interface IPilot
     {
-        Task<List<PilotResponseDTO>> GetAllTeamsAsync();
-        Task<PilotResponseDTO> GetTeamByIdAsync(int id);
-        Task<PilotResponseDTO> GetTeamByNameAsync(string name);
-        Task CreateTeamAsync(PilotRequestDTO dto);
-        Task UpdateTeamAsync(int id);
-        Task DeleteTeamAsync(int id);
+        Task<List<PilotResponseDTO>> GetAllPilotsAsync();
+        Task<PilotResponseDTO> GetPilotByTeamAsync(string name);
+        Task CreatePilotAsync(PilotRequestDTO dto);
+        Task UpdatePilotAsync(int id);
+        Task DeletePilotAsync(int id);
     }
 }

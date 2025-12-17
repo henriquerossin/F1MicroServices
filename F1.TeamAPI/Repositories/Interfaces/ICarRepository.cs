@@ -4,11 +4,10 @@ namespace F1.TeamAPI.Repositories.Interfaces
 {
     public interface ICarRepository
     {
-        Task<List<CarResponseDTO>> GetAllTeamsAsync();
-        Task<CarResponseDTO> GetTeamByIdAsync(int id);
-        Task<CarResponseDTO> GetTeamByNameAsync(string name);
-        Task CreateTeamAsync(CarRequestDTO dto);
-        Task UpdateTeamAsync(int id);
-        Task DeleteTeamAsync(int id);
+        Task<List<CarResponseDTO>> GetAllCarsAsync();
+        Task<CarResponseDTO> GetTeamByTeamAsync(int id);
+        Task CreateCarAsync(CarRequestDTO dto);
+        Task UpdateCarAsync(int id);
+        Task DeleteCarAsync(int id);
     }
 }
