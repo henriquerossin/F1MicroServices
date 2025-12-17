@@ -29,5 +29,19 @@ namespace F1.RaceAPI.Repositories
                 throw;
             }
         }
+
+        public async Task<HistoryDTO> GetLastEventAsync()
+        {
+            return await _collection
+            .Find(FilterDefinition<HistoryDTO>.Empty)
+            .SortByDescending(x => x.CreatedAt)
+            .Limit(1)
+            .FirstOrDefaultAsync();
+        }
+
+        public async Task<long> CountByEventTypeAsync(int eventType)
+        {
+            return await _collection.CountDocumentsAsync(x => x.EventType == eventType);
+        }
     }
 }

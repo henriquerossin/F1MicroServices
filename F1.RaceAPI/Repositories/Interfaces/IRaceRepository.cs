@@ -5,5 +5,9 @@ namespace F1.RaceAPI.Repositories.Interfaces
     public interface IRaceRepository
     {
         Task SaveEventAsync(HistoryDTO history);
+
+        Task<HistoryDTO> GetLastEventAsync();
+
+        Task<long> CountByEventTypeAsync(int eventType);
     }
 }

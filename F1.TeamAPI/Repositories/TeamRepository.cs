@@ -1,6 +1,6 @@
 ﻿using Dapper;
 using F1.Models.DTOs.TeamDTOs.TeamDTOs;
-using F1.RaceAPI.Data;
+using F1.TeamAPI.Data;
 using F1.TeamAPI.Repositories.Interfaces;
 using Microsoft.Data.SqlClient;
 
@@ -55,7 +55,5 @@ namespace F1.TeamAPI.Repositories
         {
             throw new NotImplementedException();
         }
-
-        public async Task<>
     }
 }

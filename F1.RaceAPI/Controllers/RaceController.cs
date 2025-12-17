@@ -1,5 +1,4 @@
-﻿using F1.Models.DTOs.HistoryDTOs;
-using F1.RaceAPI.Services.Interfaces;
+﻿using F1.RaceAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace F1.RaceAPI.Controllers
@@ -20,8 +19,16 @@ namespace F1.RaceAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> PostHistoryAsync()
         {
-            // Implementation logic here
-            return Ok(/*Object here*/);
+            try
+            {
+                await _raceService.EventWorkerAsync();
+                return Ok();
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Error while trying to start event worker.");
+                throw;
+            }
         }
     }
 }
