@@ -21,7 +21,7 @@ namespace F1.EngineeringAPI.Controllers
         {
             try
             {
-                await _engineeringService.UpdatingInfosForEvent();
+                //tratar se a lista retornar nula
                 return Ok();
             }
             catch (Exception ex)

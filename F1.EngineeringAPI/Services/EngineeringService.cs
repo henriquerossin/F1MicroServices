@@ -1,5 +1,4 @@
 ﻿using F1.EngineeringAPI.Services.Interfaces;
-using F1.Models.DTOs.EngineeringDTOs;
 using F1.Models.DTOs.HistoryDTOs;
 using Microsoft.AspNetCore.Connections;
 using RabbitMQ.Client;
@@ -18,17 +17,18 @@ namespace F1.EngineeringAPI.Services
             _logger = logger;
         }
 
-        public async Task UpdatingInfosForEvent()
+
+        public async Task<List<HistoryDTO>> ConsumingQueueAsync()
         {
+            var listHistories = new List<HistoryDTO>();
+
             try
             {
                 var factory = new ConnectionFactory { HostName = "localhost" };
                 using var connection = await factory.CreateConnectionAsync();
                 using var consumerChannel = await connection.CreateChannelAsync();
-                using var producerChannel = await connection.CreateChannelAsync();
 
-
-                await consumerChannel.QueueDeclareAsync(queue: "infos-events",
+                await consumerChannel.QueueDeclareAsync(queue: "AttHistory",
                                                  durable: true,
                                                  exclusive: false,
                                                  autoDelete: false,
@@ -41,70 +41,66 @@ namespace F1.EngineeringAPI.Services
                     var body = ea.Body.ToArray();
                     var message = Encoding.UTF8.GetString(body);
                     var info = JsonSerializer.Deserialize<HistoryDTO>(message);
-                    
-                    //realizando cálculos das atualizações do ca, cp e handicap
-                    decimal newCaFirstCar, newCpFirstCar, newHandicapFirstPilot, randomCaFirstCar, randomCpFirstCar;
-                    decimal newCaSecondCar, newCpSecondCar, newHandicapSecondPilot, randomCaSecondCar, randomCpSecondCar;
 
-                    Random random = new Random();
-
-                    randomCaFirstCar = (decimal)((random.NextDouble() * 2) - 1);
-                    randomCpFirstCar = (decimal)((random.NextDouble() * 2) - 1);
-
-
-                    newCaFirstCar = info.FirstCar.CarAerodynamicCoefficent + (info.EngineerAerodynamicExperience * randomCaFirstCar);
-                    newCpFirstCar = info.FirstCar.CarPowerCoefficient + (info.EngineerPowerExperience * randomCpFirstCar);
-
-                    newHandicapFirstPilot = info.FirstPilot.PilotHandicap - (info.FirstPilot.Experience * 0.5m);
-
-                    //realizando o cálculo do PD caso for evento de qualificação ou corrida
-                    decimal pd = 0m, randomPd;
-                    if (info. == 4 || info.Type == 5)
+                    if (info != null)
                     {
-
-
-                        randomPd = (decimal)(random.Next(1, 11));
-
-                        pd = (info.AerodynamicCoefficent * 0.4m) + (info.PowerCoefficient * 0.4m) - info.Handicap + randomPd;
+                        lock (listHistories)
+                        {
+                            listHistories.Add(info);
+                        }
                     }
-
-                    var response = new EngineeringResponseDTO
-                    {
-                        CarId = info.CarId,
-                        AerodynamicCoefficent = newCa,
-                        PowerCoefficient = newCp,
-                        CarPilotId = info.CarPilotId,
-                        EngineerAerodynamicId = info.EngineerAerodynamicId,
-                        EngineerAerodynamicExperience = info.EngineerAerodynamicExperience,
-                        EngineerPowerId = info.EngineerPowerId,
-                        EngineerPowerExperience = info.EngineerPowerExperience,
-                        EngineerCarId = info.EngineerCarId,
-                        PilotId = info.PilotId,
-                        PilotExperience = info.PilotExperience,
-                        Handicap = newHandicap,
-                        Type = info.Type,
-                        PD = pd
-                    };
-
-                    await producerChannel.QueueDeclareAsync(queue: "infos-updated",
-                                                 durable: true,
-                                                 exclusive: false,
-                                                 autoDelete: false,
-                                                 arguments: null);
-                    var jsonResponse = JsonSerializer.Serialize(response);
-                    var responseBody = Encoding.UTF8.GetBytes(jsonResponse);
-
-                    await producerChannel.BasicPublishAsync(exchange: string.Empty,
-                                                            routingKey: "infos-updated",
-                                                            body: responseBody);
 
                     await consumerChannel.BasicAckAsync(ea.DeliveryTag, false);
                 };
+
+                await consumerChannel.BasicConsumeAsync(queue: "AttHistory",
+                                                 autoAck: false,
+                                                 consumer: consumer);
+
+                return listHistories;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "An error occurred while updating engineering infos for event.");
+                return new List<HistoryDTO>();
             }
+        }
+
+        public Task UpdatingInfosForEventsAsync(List<HistoryDTO> listHistories)
+        {
+            decimal pd = 0m, randomPd;
+            foreach (var info in listHistories)
+            {
+                //realizando cálculos das atualizações do ca, cp e handicap para o PRIMEIRO piloto e carro
+                decimal newCaFirstCar, newCpFirstCar, newHandicapFirstPilot, randomCaFirstCar, randomCpFirstCar;
+                decimal newCaSecondCar, newCpSecondCar, newHandicapSecondPilot, randomCaSecondCar, randomCpSecondCar;
+
+                Random random = new Random();
+
+                randomCaFirstCar = (decimal)((random.NextDouble() * 2) - 1);
+                randomCpFirstCar = (decimal)((random.NextDouble() * 2) - 1);
+
+
+                newCaFirstCar = info.FirstCar.CarAerodynamicCoefficent + info.
+                newCpFirstCar =
+
+                newHandicapFirstPilot =
+
+                //realizando o cálculo do PD caso for evento de qualificação ou corrida
+                if ()
+                {
+
+
+                    randomPd = (decimal)(random.Next(1, 11));
+
+                    pd =
+                }
+            }
+        }
+
+        public Task ProduceQueueAsync()
+        {
+            throw new NotImplementedException();
         }
     }
 }
