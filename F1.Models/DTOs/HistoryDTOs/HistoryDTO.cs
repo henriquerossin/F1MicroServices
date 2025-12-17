@@ -16,5 +16,7 @@ namespace F1.Models.DTOs.HistoryDTOs
         //SecondPilot
         public PilotHistoryResponseDTO SecondPilot { get; init; }
         public CarHistoryResponseDTO SecondCar { get; init; }
+        //Type
+        public int EventType { get; init; }
     }
 }
