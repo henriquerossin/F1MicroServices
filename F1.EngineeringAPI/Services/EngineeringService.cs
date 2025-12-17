@@ -1,5 +1,6 @@
 ﻿using F1.EngineeringAPI.Services.Interfaces;
 using F1.Models.DTOs.HistoryDTOs;
+using F1.Models.DTOs.TeamDTOs.PilotDTOs;
 using Microsoft.AspNetCore.Connections;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -174,45 +175,63 @@ namespace F1.EngineeringAPI.Services
         public async Task ProduceQueueAsync(List<HistoryDTO> listHistories)
         {
             List<(HistoryDTO History, decimal PD)> tempRanking = new List<(HistoryDTO History, decimal PD)>();
-            try
+
+
+            foreach (var info in listHistories)
             {
-                var factory = new ConnectionFactory { HostName = "localhost" };
-                using var connection = await factory.CreateConnectionAsync();
-                using var producerChannel = await connection.CreateChannelAsync();
-                await producerChannel.QueueDeclareAsync(queue: "UpdatedHistory",
-                                                 durable: true,
-                                                 exclusive: false,
-                                                 autoDelete: false,
-                                                 arguments: null);
-                foreach (var info in listHistories)
+                decimal firstPD = 0m, secondPD = 0m, firstRandom, secondRandom;
+                if (info.EventType == 4 || info.EventType == 5)
                 {
-                    decimal pd = 0m, randomPd;
-                    //realizando o cálculo do PD caso for evento de qualificação ou corrida
-                    if (info.EventType == 4 || info.EventType == 5)
+                    Random random = new Random();
+                    firstRandom = (decimal)(random.Next(1, 11));
+                    secondRandom = (decimal)(random.Next(1, 11));
+
+                    firstPD = (info.FirstCar.CarAerodynamicCoefficent * 0.4m) + (info.FirstCar.CarPowerCoefficient * 0.4m)
+                        - info.FirstPilot.PilotHandicap + firstRandom;
+                    secondPD = (info.SecondCar.CarAerodynamicCoefficent * 0.4m) + (info.SecondCar.CarPowerCoefficient * 0.4m)
+                        - info.SecondPilot.PilotHandicap + secondRandom;
+                }
+                tempRanking.Add((info, firstPD));
+                tempRanking.Add((info, secondPD));
+            }
+
+            //ordenando a lista tempRanking 
+            tempRanking = tempRanking.OrderByDescending(x => x.PD).ToList();
+
+            //atribuindo os pontos e colocação de cada piloto e de cada equipe conforme sua colocação na lista tempRanking
+            int[] points = { 25, 18, 15, 12, 10, 8, 6, 4, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+            for (int i = 0; i < tempRanking.Count; i++)
+            {
+                var (history, pd) = tempRanking[i];
+                if (i < points.Length)
+                {
+                    if (history.FirstPilot.PilotId == history.FirstPilot.PilotId)
                     {
-                        Random random = new Random();
-                        randomPd = (decimal)(random.Next(1, 11));
-                        pd = (info.FirstCar.CarAerodynamicCoefficent * 0.4m) + (info.FirstCar.CarPowerCoefficient * 0.4m)
-                            - info.FirstPilot.PilotHandicap + randomPd;
+                        history.FirstPilot = new PilotHistoryResponseDTO
+                        {
+                            PilotId = history.FirstPilot.PilotId,
+                            PilotName = history.FirstPilot.PilotName,
+                            PilotHandicap = history.FirstPilot.PilotHandicap,
+                            PilotPoints = points[i],
+                            PilotPlacement = i + 1,
+                            Experience = history.FirstPilot.Experience
+                        };
                     }
-                    tempRanking.Add((info, pd));
-                }
-                //ordenando o ranking pelo PD em ordem decrescente
-                var rankedList = tempRanking.OrderByDescending(x => x.PD).ToList();
-                //enviando para a fila na ordem do ranking
-                foreach (var (History, PD) in rankedList)
-                {
-                    var message = JsonSerializer.Serialize(History);
-                    var body = Encoding.UTF8.GetBytes(message);
-                    await producerChannel.BasicPublishAsync(exchange: "",
-                                                    routingKey: "UpdatedHistory",
-                                                    body: body);
+                    else
+                    {
+                        history.SecondPilot = new PilotHistoryResponseDTO
+                        {
+                            PilotId = history.SecondPilot.PilotId,
+                            PilotName = history.SecondPilot.PilotName,
+                            PilotHandicap = history.SecondPilot.PilotHandicap,
+                            PilotPoints = points[i],
+                            PilotPlacement = i + 1,
+                            Experience = history.SecondPilot.Experience
+                        };
+                    }
                 }
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "An error occurred while producing updated engineering infos to queue.");
-            }
+
         }
     }
 }
