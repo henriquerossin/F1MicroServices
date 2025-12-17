@@ -4,4 +4,5 @@
   <Project Path="F1.Models/F1.Models.csproj" />
   <Project Path="F1.RaceAPI/F1.RaceAPI.csproj" />
   <Project Path="F1.TeamAPI/F1.TeamAPI.csproj" />
+  <Project Path="F1.Tests/F1.Tests.csproj" Id="5b5ba741-a818-495b-8172-91f4798a1cfe" />
 </Solution>
