@@ -2,7 +2,7 @@
 
 namespace F1.TeamAPI.Repositories.Interfaces
 {
-    public interface IPilot
+    public interface IPilotRepository
     {
         Task<List<PilotResponseDTO>> GetAllPilotsAsync();
         Task<PilotResponseDTO> GetPilotByTeamAsync(string name);

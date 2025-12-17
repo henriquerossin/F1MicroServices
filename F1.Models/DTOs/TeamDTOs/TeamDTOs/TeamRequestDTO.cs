@@ -3,6 +3,7 @@
     public class TeamRequestDTO
     {
         public string Name { get; init; }
-        public int Points { get; init; }
+        public int Points { get; init; } = 0;
+        public int Placement { get; init; } = 0;
     }
 }

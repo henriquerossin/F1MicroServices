@@ -3,9 +3,8 @@ namespace F1.TeamAPI.Repositories.Interfaces
 {
     public interface IBossRepository
     {
-        Task<List<BossResponseDTO>> GetAllBosseAsync();
-        Task<BossResponseDTO> GetBossByIdAsync(int id);
-        Task<BossResponseDTO> GetBossesByTeamAsync();
+        Task<List<BossResponseDTO>> GetAllBossesAsync();
+        Task<BossResponseDTO> GetBossesByTeamAsync(int id);
         Task CreateBossAsync(BossRequestDTO dto);
         Task UpdateBossAsync(int id);
         Task DeleteBossAsync(int id);

@@ -1,23 +1,19 @@
-﻿using F1.Models.DTOs.HistoryDTOs;
+﻿using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
-using MongoDB.Driver;
 
 namespace F1.RaceAPI.Data
 {
     public class ConnectionDB
     {
-        public readonly IMongoCollection<HistoryDTO> CollectionName;
+        public readonly string _connectionString;
 
-        public ConnectionDB(IOptions<MongoDBSettings> mongoDBSettings)
+        public ConnectionDB(IConfiguration c)
         {
-            MongoClient client = new MongoClient(mongoDBSettings.Value.ConnectionURI);
-            IMongoDatabase database = client.GetDatabase(mongoDBSettings.Value.DataBaseName);
-            CollectionName = database.GetCollection<HistoryDTO>(mongoDBSettings.Value.CollectionName);
+            _connectionString = c.GetConnectionString("DefaultCOnnection");
         }
-
-        public IMongoCollection<HistoryDTO> GetCollection()
+        public SlqConnection GetSlqConnection()
         {
-            return CollectionName;
+            return new SlqConnection(_connectionString);
         }
     }
 }
