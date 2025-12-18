@@ -1,33 +1,149 @@
-﻿using F1.Models.DTOs.TeamDTOs.EngineerDTOs;
+﻿using Dapper;
+using F1.Models.DTOs.TeamDTOs.EngineerDTOs;
+using F1.TeamAPI.Data;
 using F1.TeamAPI.Repositories.Interfaces;
+using Microsoft.Data.SqlClient;
 
 namespace F1.TeamAPI.Repositories
 {
     public class EngineerRepository : IEngineerRepository
     {
-        public Task CreateEngineerAsync(EngineerRequestDTO dto)
+        private readonly SqlConnection _connection;
+
+        public EngineerRepository(ConnectionDB c)
         {
-            throw new NotImplementedException();
+            _connection = c.GetSlqConnection();
         }
 
-        public Task DeleteEngineerAsync(int id)
+        public async Task CreateEngineerAsync(EngineerRequestDTO dto)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var sql = @"
+                    INSERT INTO Engineer
+                    (Name, Surname, Age, Experience, Type, Status, TeamId, CarId, IsActive)
+                    VALUES
+                    (@Name, @Surname, @Age, @Experience, @Type, @Status, @TeamId, @CarId, 1);
+                ";
+
+                await _connection.ExecuteAsync(sql, dto);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao registrar engenheiro: " + ex.Message);
+            }
         }
 
-        public Task<List<EngineerResponseDTO>> GetAllEngineersAsync()
+        public async Task DeleteEngineerAsync(int id)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var sql = @"UPDATE Engineer SET IsActive = 0 WHERE Id = @Id;";
+
+                await _connection.ExecuteAsync(sql, new { Id = id });
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao deletar engenheiro: " + ex.Message);
+            }
         }
 
-        public Task<EngineerResponseDTO> GetEngineersByTeamAsync(int id)
+        public async Task<List<EngineerResponseDTO>> GetAllEngineersAsync()
         {
-            throw new NotImplementedException();
+            try
+            {
+                var sql = @"
+                    SELECT
+                        Id,
+                        Name,
+                        Surname,
+                        Age,
+                        Experience,
+                        Type,
+                        Status,
+                        TeamId,
+                        CarId
+                    FROM Engineer
+                    WHERE IsActive = 1;
+                ";
+
+                return (await _connection.QueryAsync<EngineerResponseDTO>(sql)).ToList();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao obter engenheiros: " + ex.Message);
+            }
         }
 
-        public Task UpdateEngineerAsync(int id)
+        public async Task<List<EngineerResponseDTO>> GetEngineersByTeamAsync(int teamId)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var sql = @"
+                    SELECT
+                        e.Id,
+                        e.Name,
+                        e.Surname,
+                        e.Age,
+                        e.Experience,
+                        e.Type,
+                        e.Status,
+                        e.TeamId,
+                        e.CarId
+                    FROM Engineer e
+                    INNER JOIN Team t ON t.Id = e.TeamId
+                    WHERE e.TeamId = @TeamId
+                      AND e.IsActive = 1
+                      AND t.IsActive = 1;
+                ";
+
+                return (await _connection.QueryAsync<EngineerResponseDTO>(
+                    sql,
+                    new { TeamId = teamId }
+                )).ToList();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao obter engenheiros do time: " + ex.Message);
+            }
+        }
+
+        public async Task UpdateEngineerAsync(int id, EngineerRequestDTO dto)
+        {
+            try
+            {
+                var sql = @"
+                    UPDATE Engineer
+                    SET
+                        Name = @Name,
+                        Surname = @Surname,
+                        Age = @Age,
+                        Experience = @Experience,
+                        Type = @Type,
+                        Status = @Status,
+                        TeamId = @TeamId,
+                        CarId = @CarId
+                    WHERE Id = @Id
+                      AND IsActive = 1;
+                ";
+
+                await _connection.ExecuteAsync(sql, new
+                {
+                    Id = id,
+                    dto.Name,
+                    dto.Surname,
+                    dto.Age,
+                    dto.Experience,
+                    dto.Type,
+                    dto.Status,
+                    dto.TeamId,
+                    dto.CarId,
+                });
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao atualizar engenheiro: " + ex.Message);
+            }
         }
     }
 }

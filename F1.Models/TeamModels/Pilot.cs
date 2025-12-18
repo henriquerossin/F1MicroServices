@@ -13,6 +13,7 @@
         public decimal Handicap { get; private set; }
         public int TeamId { get; private set; }
         public int Points { get; private set; }
+        public bool IsActive { get; private set; }
 
         public Pilot
             (string name,
@@ -36,6 +37,7 @@
             Handicap = handicap;
             TeamId = teamId;
             Points = points;
+            IsActive = true;
         }
     }
 }

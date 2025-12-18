@@ -343,10 +343,18 @@ namespace F1.EngineeringAPI.Services
                                                  routingKey: "FinalHistory",
                                                  body: body);
             }
-            catch (Exception ex)
+
+            //ordenando a lista tempRanking 
+            tempRanking = tempRanking.OrderByDescending(x => x.PD).ToList();
+
+            //atribuindo os pontos e colocação de cada piloto e de cada equipe conforme sua colocação na lista tempRanking
+            int[] points = { 25, 18, 15, 12, 10, 8, 6, 4, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+            for (int i = 0; i < tempRanking.Count; i++)
             {
                 _logger.LogError(ex, "An error occurred while producing engineering infos for event.");
+
             }
+
         }
 
     }
