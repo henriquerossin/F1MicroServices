@@ -14,6 +14,6 @@ namespace F1.Models.DTOs.HistoryDTOs
 
         public CompetitionHistoryResponseDTO CompetitionId { get; init; }
         public List<HistoryDTO> HistoryList { get; init; }
-        public int EventType { get; private set; }
+        public int EventType { get; init; }
     }
 }
