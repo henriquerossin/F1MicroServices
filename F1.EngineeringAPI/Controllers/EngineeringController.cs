@@ -1,4 +1,5 @@
 ﻿using F1.EngineeringAPI.Services.Interfaces;
+using F1.Models.DTOs.HistoryDTOs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -21,7 +22,14 @@ namespace F1.EngineeringAPI.Controllers
         {
             try
             {
-                //tratar se a lista retornar nula
+                var finalConsumer = await _engineeringService.ConsumingQueueAsync();
+                var finalUpdatingInfos = await _engineeringService.UpdatingInfosForEventsAsync(finalConsumer);
+                var listPlacement = await _engineeringService.UpdatePlacementAsync(finalUpdatingInfos);
+                //aqui faz um que var ir um por um da ultima e passar pra producer
+                foreach (var h in listPlacement)
+                {
+                    await _engineeringService.ProduceQueueAsync(h);
+                }
                 return Ok();
             }
             catch (Exception ex)
