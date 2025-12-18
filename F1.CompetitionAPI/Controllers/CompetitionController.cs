@@ -1,5 +1,6 @@
 ﻿using F1.CompetitionAPI.Services.Interfaces;
 using F1.Models.DTOs.CompetitionDTOs;
+using F1.Models.TeamModels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
@@ -121,6 +122,91 @@ namespace F1.CompetitionAPI.Controllers
                 var total = await _service.CountActivesAsync();
 
                 return Ok(total);
+            }
+            catch (SqlException ex)
+            {
+                _logger.LogError(ex, " Error!");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, " Error!");
+                throw;
+            }
+        }
+
+        [HttpGet("IsTempStarted")]
+        public async Task<ActionResult<bool>> IsTempStarted()
+        {
+            try
+            {
+                _logger.LogInformation("Verifying...");
+                var tempIsActive = await _service.IsTempStarted();
+
+                return Ok(tempIsActive);
+            }
+            catch (SqlException ex)
+            {
+                _logger.LogError(ex, " Error!");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, " Error!");
+                throw;
+            }
+        }
+
+        [HttpPut("StartTemp")]
+        public async Task<IActionResult> StartTempAsync()
+        {
+            try
+            {
+                _logger.LogInformation("Starting...");
+                await _service.StartTempAsync();
+                return Ok();
+            }
+            catch (SqlException ex)
+            {
+                _logger.LogError(ex, " Error!");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, " Error!");
+                throw;
+            }
+        }
+
+        [HttpGet("GetOrdened")]
+        public async Task<ActionResult<List<GetCircuitDTO>>> GetAllCircuitsActivesOrdenedAsync()
+        {
+            try
+            {
+                _logger.LogInformation("Getting all circuits ordened...");
+                var circuits = await _service.GetAllCircuitsActivesOrdenedAsync();
+                return Ok(circuits);
+            }
+            catch (SqlException ex)
+            {
+                _logger.LogError(ex, " Error!");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, " Error!");
+                throw;
+            }
+        }
+
+        [HttpGet("GetCircuitIdName")]
+        public async Task<ActionResult<GetCircuitIdAndNameDTO>> GetCircuitIdAndName()
+        {
+            try
+            {
+                _logger.LogInformation("Getting circuit");
+                var circuit = await _service.GetCircuitIdAndName();
+                return Ok(circuit);
             }
             catch (SqlException ex)
             {
