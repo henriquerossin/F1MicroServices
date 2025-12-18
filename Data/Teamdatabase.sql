@@ -181,3 +181,5 @@ VALUES
 
 ('Hiroshi', 'Tanaka', 39, 4.300, 1, 'Active', 5, 9),
 ('Yuki', 'Shimizu', 37, 4.000, 2, 'Active', 5, 10);
+
+SELECT Id, Name, Points, Placement FROM Team WHERE IsActive = 1
