@@ -1,4 +1,5 @@
-﻿using F1.Models.DTOs.HistoryDTOs;
+﻿using F1.Models.DTOs.CompetitionDTOs;
+using F1.Models.DTOs.HistoryDTOs;
 using F1.RaceAPI.Repositories.Interfaces;
 using F1.RaceAPI.Services.Interfaces;
 using RabbitMQ.Client;
@@ -18,6 +19,8 @@ namespace F1.RaceAPI.Services
             _logger = logger;
             _raceRepository = raceRepository;
         }
+
+        public List<HistoryDTO> historyList = new List<HistoryDTO>();
 
         public async Task EventWorkerAsync()
         {
@@ -56,21 +59,85 @@ namespace F1.RaceAPI.Services
 
                 var message = Encoding.UTF8.GetString(body);
 
+                var history = JsonSerializer.Deserialize<HistoryDTO>(message);
+
+                var now = DateTime.UtcNow;
+
+                var lastEvent = await _raceRepository.GetLastEventAsync();
+
+                int currentEvent;
+
+                if (lastEvent is null)
+                {
+                    currentEvent = 1;
+                }
+                else
+                {
+                    var countInCurrentEvent = await _raceRepository.CountByEventTypeAsync(lastEvent.EventType);
+
+                    if (countInCurrentEvent < 11)
+                    {
+                        currentEvent = lastEvent.EventType;
+                    }
+                    else
+                    {
+                        currentEvent = lastEvent.EventType + 1;
+
+                        if (currentEvent > 5)
+                        {
+                            currentEvent = 1;
+                        }
+                    }
+                }
+
+                var mappedHistory = new HistoryDTO
+                {
+                    Id = MongoDB.Bson.ObjectId.GenerateNewId().ToString(),
+
+                    CreatedAt = DateTime.UtcNow,
+
+                    Team = history.Team,
+
+                    FirstPilot = history.FirstPilot,
+                    FirstCar = history.FirstCar,
+                    FirstEngineerCa = history.FirstEngineerCa,
+                    FirstEngineerCp = history.FirstEngineerCp,
+
+                    SecondPilot = history.SecondPilot,
+                    SecondCar = history.SecondCar,
+                    SecondEngineerCa = history.SecondEngineerCa,
+                    SecondEngineerCp = history.SecondEngineerCp,
+
+                    EventType = currentEvent
+                };
+
+                lock (historyList)
+                {
+                    historyList.Add(mappedHistory);
+                }
+
+                var attBody = Encoding.UTF8.GetBytes(
+                    JsonSerializer.Serialize(mappedHistory)
+                );
+
                 // Publishing to AttHistory Queue
                 await channel.BasicPublishAsync(
                     exchange: string.Empty,
                     routingKey: "AttHistory",
-                    body: body
+                    body: attBody
                 );
-
-                var history = JsonSerializer.Deserialize<HistoryDTO>(message);
 
                 // TODO: pick wich Circuit are we racing on from Wayne API
 
-                await _raceRepository.SaveEventAsync(history!);
+                // Consuming the History Queue
+                await _raceRepository.SaveEventAsync(new FinalHistoryResponseDTO
+                {
+                    Id = MongoDB.Bson.ObjectId.GenerateNewId().ToString(),
+                    CreatedAt = DateTime.UtcNow,
+                    HistoryList = historyList
+                });
             };
 
-            // Consuming the History Queue
             await channel.BasicConsumeAsync(
                 queue: "History",
                 autoAck: true,
