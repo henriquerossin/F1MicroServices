@@ -17,7 +17,7 @@ namespace F1.TeamAPI.Repositories
 
         public async Task<List<TeamResponseDTO>> GetAllTeamsAsync()
         {
-            try
+            try//vai se tratar gatooota
             {
                 var sql = @"SELECT Id, Name, Points, Placement 
                            FROM Team 
