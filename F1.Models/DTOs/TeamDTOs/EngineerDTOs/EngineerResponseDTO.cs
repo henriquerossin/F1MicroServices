@@ -10,5 +10,7 @@
         public bool Type { get; init; }
         public bool Status { get; init; }
         public int TeamId { get; init; }
+        public int CarId { get; init; }
+        public bool IsActive { get; init; }
     }
 }

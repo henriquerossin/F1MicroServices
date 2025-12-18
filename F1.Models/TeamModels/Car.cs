@@ -8,6 +8,7 @@
         public decimal Weight { get; private set; }
         public string Model { get; private set; }
         public int PilotId { get; private set; }
+        public bool IsActive { get; private set; }
 
         public Car
             (decimal aerodynamicCoefficent,
@@ -21,6 +22,7 @@
             Weight = weight;
             Model = model;
             PilotId = pilotId;
+            IsActive = true;
         }
     }
 }
