@@ -10,6 +10,7 @@
         public bool Type { get; private set; }
         public bool Status { get; private set; }
         public int TeamId { get; private set; }
+        public bool IsActive { get; private set; }
 
         public Boss
             (string name,
@@ -27,6 +28,7 @@
             Type = type;
             Status = status;
             TeamId = teamId;
+            IsActive = true;
         }
     }
 }

@@ -8,7 +8,7 @@ namespace F1.TeamAPI.Data
 
         public ConnectionDB(IConfiguration c)
         {
-            _connectionString = c.GetConnectionString("DefaultCOnnection");
+            _connectionString = c.GetConnectionString("DefaultConnection");
         }
         public SqlConnection GetSlqConnection()
         {

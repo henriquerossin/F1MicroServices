@@ -11,6 +11,8 @@
         public decimal Experience { get; init; }
         public decimal Handicap { get; init; }
         public int TeamId { get; init; }
-        public int Points { get; init; }
+        public int Points { get; init; } = 0;
+        public int Position { get; init; } = 0;
+        public bool IsActive { get; init; } = true;
     }
 }
