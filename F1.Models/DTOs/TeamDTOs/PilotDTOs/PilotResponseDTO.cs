@@ -13,5 +13,6 @@
         public decimal Handicap { get; init; }
         public int TeamId { get; init; }
         public int Points { get; init; }
+        public bool IsActive { get; init; }
     }
 }

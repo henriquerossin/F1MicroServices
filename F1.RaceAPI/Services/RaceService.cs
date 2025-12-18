@@ -1,5 +1,4 @@
-﻿using F1.Models.DTOs.CompetitionDTOs;
-using F1.Models.DTOs.HistoryDTOs;
+﻿using F1.Models.DTOs.HistoryDTOs;
 using F1.RaceAPI.Repositories.Interfaces;
 using F1.RaceAPI.Services.Interfaces;
 using RabbitMQ.Client;
@@ -13,6 +12,7 @@ namespace F1.RaceAPI.Services
     {
         private readonly ILogger<RaceService> _logger;
         private readonly IRaceRepository _raceRepository;
+        private int _currentEventType;
 
         public RaceService(ILogger<RaceService> logger, IRaceRepository raceRepository)
         {
@@ -49,6 +49,17 @@ namespace F1.RaceAPI.Services
                 arguments: null
             );
 
+            // Searching the last event in database
+            var lastEvent = await _raceRepository.GetLastEventAsync();
+
+            // Setting current event type, if no event found, start from 1
+            _currentEventType = lastEvent?.EventType + 1 ?? 1;
+
+            if (_currentEventType > 5)
+            {
+                _currentEventType = 1;
+            }
+
             // Creating consumer
             var consumer = new AsyncEventingBasicConsumer(channel);
 
@@ -60,35 +71,6 @@ namespace F1.RaceAPI.Services
                 var message = Encoding.UTF8.GetString(body);
 
                 var history = JsonSerializer.Deserialize<HistoryDTO>(message);
-
-                var now = DateTime.UtcNow;
-
-                var lastEvent = await _raceRepository.GetLastEventAsync();
-
-                int currentEvent;
-
-                if (lastEvent is null)
-                {
-                    currentEvent = 1;
-                }
-                else
-                {
-                    var countInCurrentEvent = await _raceRepository.CountByEventTypeAsync(lastEvent.EventType);
-
-                    if (countInCurrentEvent < 11)
-                    {
-                        currentEvent = lastEvent.EventType;
-                    }
-                    else
-                    {
-                        currentEvent = lastEvent.EventType + 1;
-
-                        if (currentEvent > 5)
-                        {
-                            currentEvent = 1;
-                        }
-                    }
-                }
 
                 var mappedHistory = new HistoryDTO
                 {
@@ -107,13 +89,42 @@ namespace F1.RaceAPI.Services
                     SecondCar = history.SecondCar,
                     SecondEngineerCa = history.SecondEngineerCa,
                     SecondEngineerCp = history.SecondEngineerCp,
-
-                    EventType = currentEvent
                 };
+
+                FinalHistoryResponseDTO finalEvent = null;
 
                 lock (historyList)
                 {
                     historyList.Add(mappedHistory);
+
+                    if (historyList.Count == 11)
+                    {
+                        finalEvent = new FinalHistoryResponseDTO
+                        {
+                            Id = MongoDB.Bson.ObjectId.GenerateNewId().ToString(),
+                            CreatedAt = DateTime.UtcNow,
+                            EventType = _currentEventType,
+
+                            // TODO: pick which Circuit are we racing on from Wayne API
+
+                            HistoryList = historyList.ToList()
+                        };
+
+                        historyList.Clear();
+
+                        _currentEventType++;
+
+                        if (_currentEventType > 5)
+                        {
+                            _currentEventType = 1;
+                        }
+                    }
+                }
+
+                if (finalEvent is not null)
+                {
+                    // Saving FinalHistoryResponseDTO to database in MongoDB
+                    await _raceRepository.SaveEventAsync(finalEvent);
                 }
 
                 var attBody = Encoding.UTF8.GetBytes(
@@ -126,18 +137,9 @@ namespace F1.RaceAPI.Services
                     routingKey: "AttHistory",
                     body: attBody
                 );
-
-                // TODO: pick wich Circuit are we racing on from Wayne API
-
-                // Consuming the History Queue
-                await _raceRepository.SaveEventAsync(new FinalHistoryResponseDTO
-                {
-                    Id = MongoDB.Bson.ObjectId.GenerateNewId().ToString(),
-                    CreatedAt = DateTime.UtcNow,
-                    HistoryList = historyList
-                });
             };
 
+            // Consuming the History Queue
             await channel.BasicConsumeAsync(
                 queue: "History",
                 autoAck: true,

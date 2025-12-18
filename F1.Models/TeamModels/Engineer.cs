@@ -11,6 +11,7 @@
         public bool Status { get; private set; }
         public int CarId { get; private set; }
         public int TeamId { get; private set; }
+        public bool IsActive { get; private set; }
 
         public Engineer
             (string name,
@@ -19,6 +20,7 @@
             decimal experience,
             bool type,
             bool status,
+            int carId,
             int teamId)
         {
             Name = name;
@@ -28,6 +30,8 @@
             Type = type;
             Status = status;
             TeamId = teamId;
+            CarId = carId;
+            IsActive = true;
         }
     }
 }

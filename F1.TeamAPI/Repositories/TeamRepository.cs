@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using F1.Models.DTOs.TeamDTOs.TeamDTOs;
+using F1.Models.TeamModels;
 using F1.TeamAPI.Data;
 using F1.TeamAPI.Repositories.Interfaces;
 using Microsoft.Data.SqlClient;
@@ -17,43 +18,53 @@ namespace F1.TeamAPI.Repositories
 
         public async Task<List<TeamResponseDTO>> GetAllTeamsAsync()
         {
-            try
+            try//vai se tratar gatooota
             {
-                var sql = "SELECT Name, Points, Placement FROM Team;";
+                var sql = @"SELECT Id, Name, Points, Placement 
+                           FROM Team 
+                           WHERE IsActive = 1;";
                 var teams = (await _connection.QueryAsync<TeamResponseDTO>(sql)).ToList();
 
                 return teams;
             }
             catch (Exception ex)
             {
-                {
-                    throw new Exception("Erro ao obter times: " + ex.Message);
-                }
+                throw new Exception("Erro ao obter times: " + ex.Message);
             }
+
         }
 
-
-        public async Task CreateTeamAsync(TeamRequestDTO dto)
+        public async Task CreateTeamAsync(Team team)
         {
-            try{
-                var sql = @"INSERT INTO TEAM (Name, Points, Placement)
-                          VALUES (@Name, @Points, @Placement)";
-
-            await _connection.ExecuteAsync(sql, new { dto.Name, dto.Points, dto.Placement}); //usuario so informa o nome, o resto vai 0 pelo contrutor
-            } catch
+            try
             {
+                var sql = @"INSERT INTO Team (Name, Points, Placement, IsActive)
+                          VALUES (@Name, @Points, @Placement, @IsActive)";
 
+                var id = await _connection.ExecuteScalarAsync<int>(sql, team);
+
+                typeof(Team).GetProperty(nameof(Team.Id))!.SetValue(team, id);
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao registrar time: " + ex.Message);
             }
         }
 
-        public Task UpdateTeamAsync(int id)
+        public async Task DeleteTeamAsync(int id)
         {
-            throw new NotImplementedException();
-        }
+            try
+            {
+                var sql = "UPDATE Team Set IsActive = 0 WHERE Id = @Id";
 
-        public Task DeleteTeamAsync(int id)
-        {
-            throw new NotImplementedException();
+                await _connection.ExecuteAsync(sql, new { id });
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao deletar time" + ex.Message);
+            }
         }
     }
 }
+

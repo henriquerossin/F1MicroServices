@@ -8,6 +8,8 @@ CREATE TABLE Team (
     Id INT NOT NULL IDENTITY(1,1),
     Name VARCHAR(255) NOT NULL,
     Points INT NOT NULL DEFAULT 0,
+    Placement INT NOT NULL DEFAULT 0,
+    IsActive TINYINT NOT NULL DEFAULT 1,
     CONSTRAINT PK_Team PRIMARY KEY (Id)
 )
 
@@ -24,6 +26,7 @@ CREATE TABLE Pilot (
     Points INT NOT NULL,
     TeamId INT NOT NULL,
     Position INT NOT NULL DEFAULT 0,
+    IsActive TINYINT NOT NULL DEFAULT 1,
 
     CONSTRAINT PK_Pilot PRIMARY KEY (Id),
     CONSTRAINT UQ_Pilot_Identification UNIQUE (IdentificationNumber),
@@ -41,7 +44,7 @@ CREATE TABLE Car (
     Weight DECIMAL(6,2) NOT NULL,
     Model VARCHAR(5) NOT NULL,
     PilotId INT NOT NULL,
-   
+    IsActive TINYINT NOT NULL DEFAULT 1,
 
     CONSTRAINT PK_Car PRIMARY KEY (Id),
     CONSTRAINT UQ_Car_Pilot UNIQUE (PilotId),
@@ -62,7 +65,7 @@ CREATE TABLE Engineer (
     Status VARCHAR(255) NOT NULL,
     TeamId INT NOT NULL,
     CarId INT NOT NULL,
-
+    IsActive TINYINT NOT NULL DEFAULT 1,
 
     CONSTRAINT PK_Engineer PRIMARY KEY (Id),
     CONSTRAINT CK_Engineer_Experience CHECK (Experience BETWEEN 1.000 AND 5.000),
@@ -79,7 +82,8 @@ CREATE TABLE Boss (
     Type VARCHAR(255) NOT NULL,
     Status TINYINT NOT NULL,
     TeamId INT NOT NULL,
-    
+    IsActive TINYINT NOT NULL DEFAULT 1,
+
     CONSTRAINT PK_Boss PRIMARY KEY (Id),
     CONSTRAINT FK_Boss_Team FOREIGN KEY (TeamId) REFERENCES Team(Id)
 )
@@ -96,12 +100,12 @@ select * from Car;
 select * from Engineer;
 select * from Boss;
 
-INSERT INTO Team (Name, Points) VALUES
-('Apex Racing', 0),
-('Thunder Motors', 0),
-('Crimson Velocity', 0),
-('Iron Falcon GP', 0),
-('Nova Horizon Racing', 0);
+INSERT INTO Team (Name, Points, Placement) VALUES
+('Apex Racing', 0, 0),
+('Thunder Motors', 0, 0),
+('Crimson Velocity', 0, 0),
+('Iron Falcon GP', 0, 0),
+('Nova Horizon Racing', 0, 0);
 
 
 INSERT INTO Boss (Name, Surname, Age, Type, Status, TeamId) VALUES
@@ -143,8 +147,8 @@ VALUES
 INSERT INTO Car
 (AerodynamicCoefficent, PowerCoefficient, Weight, Model, PilotId)
 VALUES
-(7.800, 8.500, 798.50, 'ARO01', 11),
-(7.600, 8.300, 801.20, 'ARO01', 12),
+(7.800, 8.500, 798.50, 'ARO01', 1),
+(7.600, 8.300, 801.20, 'ARO01', 2),
 
 (7.500, 8.200, 802.00, 'TMT01', 3),
 (7.400, 8.100, 804.00, 'TMT02', 4),
@@ -163,11 +167,11 @@ VALUES
 INSERT INTO Engineer
 (Name, Surname, Age, Experience, Type, Status, TeamId, CarId)
 VALUES
-('Oliver', 'Grant', 38, 4.200, 1, 'Active', 1, 11),
-('Daniel', 'Moore', 36, 3.700, 2, 'Active', 1, 12),
+('Oliver', 'Grant', 38, 4.200, 1, 'Active', 1, 1),
+('Daniel', 'Moore', 36, 3.700, 2, 'Active', 1, 2),
 
-('Sophia', 'Brown', 35, 3.900, 1, 'Active', 2, 13),
-('Isabella', 'Adams', 34, 3.500, 2, 'Active', 2, 14),
+('Sophia', 'Brown', 35, 3.900, 1, 'Active', 2, 3),
+('Isabella', 'Adams', 34, 3.500, 2, 'Active', 2, 4),
 
 ('Alessandro', 'Moretti', 41, 4.500, 1, 'Active', 3, 5),
 ('Stefano', 'Galli', 40, 4.200, 2, 'Active', 3, 6),
@@ -177,3 +181,5 @@ VALUES
 
 ('Hiroshi', 'Tanaka', 39, 4.300, 1, 'Active', 5, 9),
 ('Yuki', 'Shimizu', 37, 4.000, 2, 'Active', 5, 10);
+
+SELECT Id, Name, Points, Placement FROM Team WHERE IsActive = 1

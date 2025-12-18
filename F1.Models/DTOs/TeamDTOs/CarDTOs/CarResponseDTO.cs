@@ -8,5 +8,6 @@
         public decimal Weight { get; init; }
         public string Model { get; init; }
         public int PilotId { get; init; }
+        public bool IsActive { get; init; }
     }
 }
