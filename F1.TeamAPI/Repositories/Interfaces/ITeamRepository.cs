@@ -8,5 +8,7 @@ namespace F1.TeamAPI.Repositories.Interfaces
         Task<List<TeamResponseDTO>> GetAllTeamsAsync();
         Task CreateTeamAsync(Team team);
         Task DeleteTeamAsync(int id);
+
+        Task UpdateTeamPlacementAndPointsAsync(int teamId, int placement, int points);
     }
 }

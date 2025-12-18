@@ -139,6 +139,28 @@ namespace F1.TeamAPI.Repositories
             }
         }
 
+        public async Task UpdatePilotHandicapAndPointsAsync(
+            int pilotId,
+            decimal handicap,
+            int points)
+        {
+            const string sql = @"
+                               UPDATE Pilot
+                               SET 
+                               Handicap = @Handicap,
+                               Points = @Points
+                               WHERE Id = @PilotId;";
+
+            await _connection.ExecuteAsync(sql, new
+            {
+                PilotId = pilotId,
+                Handicap = handicap,
+                Points = points
+            });
+        }
+
+
+
 
     }
 }

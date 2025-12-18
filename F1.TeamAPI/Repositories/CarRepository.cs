@@ -61,8 +61,7 @@ namespace F1.TeamAPI.Repositories
                         Model,
                         PilotId
                     FROM Car
-                    WHERE IsActive = 1;
-                ";
+                    WHERE IsActive = 1;";
 
                 return (await _connection.QueryAsync<CarResponseDTO>(sql)).ToList();
             }
@@ -77,21 +76,20 @@ namespace F1.TeamAPI.Repositories
             try
             {
                 var sql = @"
-                    SELECT
+                        SELECT
                         c.Id,
                         c.AerodynamicCoefficent,
                         c.PowerCoefficient,
                         c.Weight,
                         c.Model,
                         c.PilotId
-                    FROM Car c
-                    INNER JOIN Pilot p ON p.Id = c.PilotId
-                    INNER JOIN Team t ON t.Id = p.TeamId
-                    WHERE t.Id = @TeamId
-                      AND c.IsActive = 1
-                      AND p.IsActive = 1
-                      AND t.IsActive = 1;
-                ";
+                        FROM Car c
+                        INNER JOIN Pilot p ON p.Id = c.PilotId
+                        INNER JOIN Team t ON t.Id = p.TeamId
+                        WHERE t.Id = @TeamId
+                        AND c.IsActive = 1
+                        AND p.IsActive = 1
+                        AND t.IsActive = 1;";
 
                 return (await _connection.QueryAsync<CarResponseDTO>(
                     sql,
@@ -133,6 +131,23 @@ namespace F1.TeamAPI.Repositories
             catch (Exception ex)
             {
                 throw new Exception("Erro ao atualizar carro: " + ex.Message);
+            }
+        }
+        public async Task UpdateCACPByPilotIdAsync(int id, decimal ca, decimal cp)
+        {
+            try
+            {
+                var sql = @"UPDATE Car
+                          SET 
+                          PowerCoefficient = @PowerCoefficient,
+                          AerodynamicCoefficent = @AerodynamicCoefficent
+                          WHERE PilotId = @PilotId;";
+
+                await _connection.ExecuteAsync(sql, new { ca, cp, id });
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao atualizar CA e CP: " + ex.Message);
             }
         }
     }

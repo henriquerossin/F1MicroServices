@@ -65,6 +65,26 @@ namespace F1.TeamAPI.Repositories
                 throw new Exception("Erro ao deletar time" + ex.Message);
             }
         }
+
+
+        public async Task UpdateTeamPlacementAndPointsAsync(int teamId, int placement, int points)
+        {
+            const string sql = @"
+                               UPDATE Team
+                               SET 
+                               Placement = @Placement,
+                               Points = @Points
+                               WHERE Id = @TeamId;";
+
+            await _connection.ExecuteAsync(sql, new
+            {
+                TeamId = teamId,
+                Placement = placement,
+                Points = points
+            });
+        }
+
+
     }
 }
 
