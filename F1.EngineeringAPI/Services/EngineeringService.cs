@@ -66,7 +66,7 @@ namespace F1.EngineeringAPI.Services
                 return new List<HistoryDTO>();
             }
         }
-
+        
         public async Task<List<HistoryDTO>> UpdatingInfosForEventsAsync(List<HistoryDTO> listHistories)
         {
             var newListHistories = new List<HistoryDTO>();

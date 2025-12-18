@@ -1,4 +1,5 @@
-﻿using F1.Models.DTOs.TeamDTOs.BossDTOs;
+﻿using F1.Application.Services.Validation;
+using F1.Models.DTOs.TeamDTOs.BossDTOs;
 using F1.Models.DTOs.TeamDTOs.CarDTOs;
 using F1.Models.DTOs.TeamDTOs.EngineerDTOs;
 using F1.Models.DTOs.TeamDTOs.PilotDTOs;
@@ -12,22 +13,37 @@ namespace F1.TeamAPI.Services
     public class TeamService : ITeamService
     {
         private readonly ITeamRepository _teamRepo;
+        private readonly TeamCreationValidator _validator;
 
-        public TeamService(ITeamRepository teamRepo)
+        public TeamService(
+            ITeamRepository teamRepo,
+            TeamCreationValidator validator)
         {
             _teamRepo = teamRepo;
+            _validator = validator;
         }
 
-
-        public async Task<int> CreateCompletlyTeamAsyncManually(TeamRequestDTO teamDto, PilotRequestDTO pilotDto, CarRequestDTO carDto, EngineerRequestDTO engineerDto, BossRequestDTO bossDto)
+        public async Task<int> CreateCompletelyTeamManuallyAsync(
+            TeamRequestDTO teamDto,
+            List<PilotRequestDTO> pilotsDto,
+            List<CarRequestDTO> carsDto,
+            List<EngineerRequestDTO> engineersDto,
+            List<BossRequestDTO> bossesDto)
         {
-
-
-
+            _validator.Validate(
+                teamDto,
+                pilotsDto,
+                carsDto,
+                engineersDto,
+                bossesDto);
 
             var team = new Team(teamDto.Name);
             await _teamRepo.CreateTeamAsync(team);
+
+            // criação dos outros membros vem depois
+
             return team.Id;
         }
     }
+
 }
