@@ -51,7 +51,7 @@ namespace F1.EngineeringAPI.Services
                     {
                         lock (listHistories)
                         {
-                            foreach(var history in info.HistoryList)
+                            foreach (var history in info.HistoryList)
                             {
                                 listHistories.Add(history);
                             }
@@ -73,13 +73,8 @@ namespace F1.EngineeringAPI.Services
                 throw;
             }
         }
-<<<<<<< HEAD
-        
-        public async Task<List<HistoryDTO>> UpdatingInfosForEventsAsync(List<HistoryDTO> listHistories)
-=======
 
         public async Task<FinalHistoryResponseDTO> UpdatingInfosForEventsAsync(FinalHistoryResponseDTO finalHistory)
->>>>>>> origin/giovanna
         {
             var newListHistories = new FinalHistoryResponseDTO().HistoryList;
             decimal pd = 0m, randomPd;
@@ -94,7 +89,7 @@ namespace F1.EngineeringAPI.Services
                 randomCaFirstCar = (decimal)((firstRandomandom.NextDouble() * 2) - 1);
                 randomCpFirstCar = (decimal)((firstRandomandom.NextDouble() * 2) - 1);
 
-                
+
                 newCaFirstCar = info.FirstCar.CarAerodynamicCoefficent + info.FirstEngineerCa.Experience * randomCaFirstCar;
                 newCpFirstCar = info.FirstCar.CarPowerCoefficient + info.FirstEngineerCp.Experience * randomCpFirstCar;
 
@@ -179,7 +174,7 @@ namespace F1.EngineeringAPI.Services
             var newListHistPilot = new FinalHistoryResponseDTO().HistoryList;
             List<(int id, decimal PD)> aux = new List<(int id, decimal PD)>();
             bool needsToCalculatePD = false;
-            
+
             foreach (var info in finalHistory.HistoryList)
             {
                 decimal firstPD = 0m, secondPD = 0m, firstRandom, secondRandom;
@@ -348,19 +343,12 @@ namespace F1.EngineeringAPI.Services
                                                  routingKey: "FinalHistory",
                                                  body: body);
             }
-
-            //ordenando a lista tempRanking 
-            tempRanking = tempRanking.OrderByDescending(x => x.PD).ToList();
-
-            //atribuindo os pontos e colocação de cada piloto e de cada equipe conforme sua colocação na lista tempRanking
-            int[] points = { 25, 18, 15, 12, 10, 8, 6, 4, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-            for (int i = 0; i < tempRanking.Count; i++)
+            catch (Exception ex)
             {
                 _logger.LogError(ex, "An error occurred while producing engineering infos for event.");
-
             }
-
         }
 
     }
+
 }

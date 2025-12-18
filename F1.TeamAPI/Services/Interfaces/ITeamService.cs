@@ -2,7 +2,7 @@
 
 namespace F1.TeamAPI.Services.Interfaces
 {
-    public class ITeamService
+    public interface ITeamService
     {
         Task CreateTeamAsync();
 
