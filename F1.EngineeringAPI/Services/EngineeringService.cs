@@ -1,5 +1,8 @@
 ﻿using F1.EngineeringAPI.Services.Interfaces;
 using F1.Models.DTOs.HistoryDTOs;
+using F1.Models.DTOs.TeamDTOs.CarDTOs;
+using F1.Models.DTOs.TeamDTOs.PilotDTOs;
+using F1.Models.DTOs.TeamDTOs.TeamDTOs;
 using Microsoft.AspNetCore.Connections;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -18,9 +21,9 @@ namespace F1.EngineeringAPI.Services
         }
 
 
-        public async Task<List<HistoryDTO>> ConsumingQueueAsync()
+        public async Task<FinalHistoryResponseDTO> ConsumingQueueAsync()
         {
-            var listHistories = new List<HistoryDTO>();
+            var listHistories = new FinalHistoryResponseDTO().HistoryList;
 
             try
             {
@@ -36,17 +39,22 @@ namespace F1.EngineeringAPI.Services
 
                 var consumer = new AsyncEventingBasicConsumer(consumerChannel);
 
+                FinalHistoryResponseDTO info = null;
+
                 consumer.ReceivedAsync += async (model, ea) =>
                 {
                     var body = ea.Body.ToArray();
                     var message = Encoding.UTF8.GetString(body);
-                    var info = JsonSerializer.Deserialize<HistoryDTO>(message);
+                    info = JsonSerializer.Deserialize<FinalHistoryResponseDTO>(message);
 
                     if (info != null)
                     {
                         lock (listHistories)
                         {
-                            listHistories.Add(info);
+                            foreach(var history in info.HistoryList)
+                            {
+                                listHistories.Add(history);
+                            }
                         }
                     }
 
@@ -57,21 +65,26 @@ namespace F1.EngineeringAPI.Services
                                                  autoAck: false,
                                                  consumer: consumer);
 
-                return listHistories;
+                return info;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "An error occurred while updating engineering infos for event.");
-                return new List<HistoryDTO>();
+                throw;
             }
         }
-
+<<<<<<< HEAD
+        
         public async Task<List<HistoryDTO>> UpdatingInfosForEventsAsync(List<HistoryDTO> listHistories)
+=======
+
+        public async Task<FinalHistoryResponseDTO> UpdatingInfosForEventsAsync(FinalHistoryResponseDTO finalHistory)
+>>>>>>> origin/giovanna
         {
-            var newListHistories = new List<HistoryDTO>();
+            var newListHistories = new FinalHistoryResponseDTO().HistoryList;
             decimal pd = 0m, randomPd;
 
-            foreach (var info in listHistories)
+            foreach (var info in finalHistory.HistoryList)
             {
                 //realizando cálculos das atualizações do ca, cp e handicap para o PRIMEIRO piloto e carro
                 decimal newCaFirstCar, newCpFirstCar, newHandicapFirstPilot, randomCaFirstCar, randomCpFirstCar;
@@ -81,20 +94,11 @@ namespace F1.EngineeringAPI.Services
                 randomCaFirstCar = (decimal)((firstRandomandom.NextDouble() * 2) - 1);
                 randomCpFirstCar = (decimal)((firstRandomandom.NextDouble() * 2) - 1);
 
-
+                
                 newCaFirstCar = info.FirstCar.CarAerodynamicCoefficent + info.FirstEngineerCa.Experience * randomCaFirstCar;
                 newCpFirstCar = info.FirstCar.CarPowerCoefficient + info.FirstEngineerCp.Experience * randomCpFirstCar;
 
                 newHandicapFirstPilot = info.FirstPilot.PilotHandicap - (info.FirstPilot.Experience * 0.5m);
-
-                //realizando o cálculo do PD caso for evento de qualificação ou corrida
-                if (info.EventType == 4 || info.EventType == 5)
-                {
-                    randomPd = (decimal)(firstRandomandom.Next(1, 11));
-
-                    pd = (info.FirstCar.CarAerodynamicCoefficent * 0.4m) + (info.FirstCar.CarPowerCoefficient * 0.4m)
-                        - info.FirstPilot.PilotHandicap + randomPd;
-                }
 
 
                 //realizando cálculos das atualizações do ca, cp e handicap para o SEGUNDO piloto e carro
@@ -111,21 +115,11 @@ namespace F1.EngineeringAPI.Services
 
                 newHandicapSecondPilot = info.SecondPilot.PilotHandicap - (info.SecondPilot.Experience * 0.5m);
 
-                //realizando o cálculo do PD caso for evento de qualificação ou corrida
-                if (info.EventType == 4 || info.EventType == 5)
-                {
-                    randomPd = (decimal)(secondRandom.Next(1, 11));
-
-                    pd = (info.SecondCar.CarAerodynamicCoefficent * 0.4m) + (info.SecondCar.CarPowerCoefficient * 0.4m)
-                        - info.SecondPilot.PilotHandicap + randomPd;
-                }
-
-
                 //criando o novo obj HistoryDTO para ser colocado na nova lista
                 var newInfo = new HistoryDTO
                 {
                     Team = info.Team,
-                    FirstPilot = new Models.DTOs.TeamDTOs.PilotDTOs.PilotHistoryResponseDTO
+                    FirstPilot = new PilotHistoryResponseDTO
                     {
                         PilotId = info.FirstPilot.PilotId,
                         PilotName = info.FirstPilot.PilotName,
@@ -134,7 +128,7 @@ namespace F1.EngineeringAPI.Services
                         PilotPlacement = info.FirstPilot.PilotPlacement,
                         Experience = info.FirstPilot.Experience
                     },
-                    FirstCar = new Models.DTOs.TeamDTOs.CarDTOs.CarHistoryResponseDTO
+                    FirstCar = new CarHistoryResponseDTO
                     {
                         CarId = info.FirstCar.CarId,
                         CarAerodynamicCoefficent = newCaFirstCar,
@@ -143,7 +137,7 @@ namespace F1.EngineeringAPI.Services
                     },
                     FirstEngineerCa = info.FirstEngineerCa,
                     FirstEngineerCp = info.FirstEngineerCp,
-                    SecondPilot = new Models.DTOs.TeamDTOs.PilotDTOs.PilotHistoryResponseDTO
+                    SecondPilot = new PilotHistoryResponseDTO
                     {
                         PilotId = info.SecondPilot.PilotId,
                         PilotName = info.SecondPilot.PilotName,
@@ -152,7 +146,7 @@ namespace F1.EngineeringAPI.Services
                         PilotPlacement = info.SecondPilot.PilotPlacement,
                         Experience = info.SecondPilot.Experience
                     },
-                    SecondCar = new Models.DTOs.TeamDTOs.CarDTOs.CarHistoryResponseDTO
+                    SecondCar = new CarHistoryResponseDTO
                     {
                         CarId = info.SecondCar.CarId,
                         CarAerodynamicCoefficent = newCaSecondCar,
@@ -168,51 +162,205 @@ namespace F1.EngineeringAPI.Services
                 newListHistories.Add(newInfo);
 
             }
-            return newListHistories;
+
+            var newFinalHistory = new FinalHistoryResponseDTO
+            {
+                Id = finalHistory.Id,
+                CreatedAt = finalHistory.CreatedAt,
+                CompetitionId = finalHistory.CompetitionId,
+                HistoryList = newListHistories,
+                EventType = finalHistory.EventType
+            };
+            return newFinalHistory;
         }
 
-        public async Task ProduceQueueAsync(List<HistoryDTO> listHistories)
+        public async Task<List<HistoryDTO>> UpdatePlacementAsync(FinalHistoryResponseDTO finalHistory)
         {
-            List<(HistoryDTO History, decimal PD)> tempRanking = new List<(HistoryDTO History, decimal PD)>();
+            var newListHistPilot = new FinalHistoryResponseDTO().HistoryList;
+            List<(int id, decimal PD)> aux = new List<(int id, decimal PD)>();
+            bool needsToCalculatePD = false;
+            
+            foreach (var info in finalHistory.HistoryList)
+            {
+                decimal firstPD = 0m, secondPD = 0m, firstRandom, secondRandom;
+                if (info.EventType == 4 || info.EventType == 5)
+                {
+                    Random random = new Random();
+                    firstRandom = (decimal)(random.Next(1, 11));
+                    secondRandom = (decimal)(random.Next(1, 11));
+
+                    firstPD = (info.FirstCar.CarAerodynamicCoefficent * 0.4m) + (info.FirstCar.CarPowerCoefficient * 0.4m)
+                        - info.FirstPilot.PilotHandicap + firstRandom;
+                    secondPD = (info.SecondCar.CarAerodynamicCoefficent * 0.4m) + (info.SecondCar.CarPowerCoefficient * 0.4m)
+                        - info.SecondPilot.PilotHandicap + secondRandom;
+                    aux.Add((info.FirstPilot.PilotId, firstPD));
+                    aux.Add((info.SecondPilot.PilotId, secondPD));
+
+                    needsToCalculatePD = true;
+                }
+            }
+
+            //entra se for qualificação ou corrida, e atribui a pontuação conforme o PD calculado
+            if (needsToCalculatePD)
+            {
+                //ordenando a lista tempRanking 
+                aux = aux.OrderByDescending(x => x.PD).ToList();
+
+                //atribuindo os pontos e colocação de cada piloto e de cada equipe conforme sua colocação na lista tempRanking
+                int[] points = { 25, 18, 15, 12, 10, 8, 6, 4, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+                int placementFirstPilot = 0, placementSecondPilot = 0;
+                int pointsFirstPilot, pointsSecondPilot, pointsTeam;
+                int firstPosition, secondPosition;
+
+                foreach (var itemaux in aux)
+                {
+                    foreach (var itemhist in finalHistory.HistoryList)
+                    {
+                        pointsFirstPilot = itemhist.FirstPilot.PilotPoints;
+                        pointsSecondPilot = itemhist.SecondPilot.PilotPlacement;
+                        pointsTeam = itemhist.Team.TeamPoints;
+
+                        if (itemaux.id == itemhist.FirstPilot.PilotId || itemaux.id == itemhist.SecondPilot.PilotId && itemhist.FirstPilot.PilotPlacement == 0)
+                        {
+                            firstPosition = aux.FindIndex(x => x.id == itemhist.FirstPilot.PilotId);
+                            pointsFirstPilot += points[firstPosition];
+                            pointsTeam += points[firstPosition];
+                            placementFirstPilot = firstPosition + 1;
+
+                            secondPosition = aux.FindIndex(x => x.id == itemhist.SecondPilot.PilotId);
+                            pointsSecondPilot += points[secondPosition];
+                            pointsTeam += points[secondPosition];
+                            placementSecondPilot = secondPosition + 1;
+
+                            var newInfo = new HistoryDTO
+                            {
+                                Team = new TeamHistoryResponseDTO
+                                {
+                                    TeamId = itemhist.Team.TeamId,
+                                    TeamName = itemhist.Team.TeamName,
+                                    TeamPoints = pointsTeam,
+                                    TeamPlacement = itemhist.Team.TeamPlacement
+                                },
+                                FirstPilot = new PilotHistoryResponseDTO
+                                {
+                                    PilotId = itemhist.FirstPilot.PilotId,
+                                    PilotName = itemhist.FirstPilot.PilotName,
+                                    PilotHandicap = itemhist.FirstPilot.PilotHandicap,
+                                    PilotPoints = pointsFirstPilot,
+                                    PilotPlacement = placementFirstPilot,
+                                    Experience = itemhist.FirstPilot.Experience
+                                },
+                                FirstCar = itemhist.FirstCar,
+                                FirstEngineerCa = itemhist.FirstEngineerCa,
+                                FirstEngineerCp = itemhist.FirstEngineerCp,
+                                SecondPilot = new PilotHistoryResponseDTO
+                                {
+                                    PilotId = itemhist.SecondPilot.PilotId,
+                                    PilotName = itemhist.SecondPilot.PilotName,
+                                    PilotHandicap = itemhist.SecondPilot.PilotHandicap,
+                                    PilotPoints = pointsSecondPilot,
+                                    PilotPlacement = placementSecondPilot,
+                                    Experience = itemhist.SecondPilot.Experience
+                                },
+                                SecondCar = itemhist.SecondCar,
+                                SecondEngineerCa = itemhist.SecondEngineerCa,
+                                SecondEngineerCp = itemhist.SecondEngineerCp,
+                                EventType = itemhist.EventType
+                            };
+                            newListHistPilot.Add(newInfo);
+                        }
+                        //voltando as posicoes temporárias para 0 para o próximo loop
+                        placementFirstPilot = 0;
+                        placementSecondPilot = 0;
+                    }
+                }
+
+                var newListHistTeam = new List<HistoryDTO>();
+
+                //atribuindo as posições finais para as equipes
+                newListHistPilot = newListHistPilot.OrderByDescending(x => x.Team.TeamPoints).ToList();
+
+                //deixando a lista final com as posições finais de cada equipe
+                foreach (var item in newListHistPilot)
+                {
+                    int finalTeamPlacement = newListHistPilot.FindIndex(x => x.Team.TeamId == item.Team.TeamId) + 1;
+
+                    var newInfo = new HistoryDTO
+                    {
+                        Team = new TeamHistoryResponseDTO
+                        {
+                            TeamId = item.Team.TeamId,
+                            TeamName = item.Team.TeamName,
+                            TeamPoints = item.Team.TeamPoints,
+                            TeamPlacement = finalTeamPlacement
+                        },
+                        FirstPilot = item.FirstPilot,
+                        FirstCar = item.FirstCar,
+                        FirstEngineerCa = item.FirstEngineerCa,
+                        FirstEngineerCp = item.FirstEngineerCp,
+                        SecondPilot = item.SecondPilot,
+                        SecondCar = item.SecondCar,
+                        SecondEngineerCa = item.SecondEngineerCa,
+                        SecondEngineerCp = item.SecondEngineerCp,
+                        EventType = item.EventType
+                    };
+
+                    newListHistTeam.Add(newInfo);
+                }
+
+                return newListHistTeam;
+            }
+            return finalHistory.HistoryList;
+        }
+
+        public async Task ProduceQueueAsync(HistoryDTO history)
+        {
             try
             {
-                var factory = new ConnectionFactory { HostName = "localhost" };
+                var newInfo = new HistoryDTO
+                {
+                    Team = history.Team,
+                    FirstPilot = history.FirstPilot,
+                    FirstCar = history.FirstCar,
+                    FirstEngineerCa = history.FirstEngineerCa,
+                    FirstEngineerCp = history.FirstEngineerCp,
+                    SecondPilot = history.SecondPilot,
+                    SecondCar = history.SecondCar,
+                    SecondEngineerCa = history.SecondEngineerCa,
+                    SecondEngineerCp = history.SecondEngineerCp,
+                    EventType = history.EventType
+                };
+
+                var factory = new ConnectionFactory() { HostName = "localhost" };
                 using var connection = await factory.CreateConnectionAsync();
                 using var producerChannel = await connection.CreateChannelAsync();
-                await producerChannel.QueueDeclareAsync(queue: "UpdatedHistory",
+
+                await producerChannel.QueueDeclareAsync(queue: "FinalHistory",
                                                  durable: true,
                                                  exclusive: false,
                                                  autoDelete: false,
                                                  arguments: null);
-                foreach (var info in listHistories)
-                {
-                    decimal pd = 0m, randomPd;
-                    //realizando o cálculo do PD caso for evento de qualificação ou corrida
-                    if (info.EventType == 4 || info.EventType == 5)
-                    {
-                        Random random = new Random();
-                        randomPd = (decimal)(random.Next(1, 11));
-                        pd = (info.FirstCar.CarAerodynamicCoefficent * 0.4m) + (info.FirstCar.CarPowerCoefficient * 0.4m)
-                            - info.FirstPilot.PilotHandicap + randomPd;
-                    }
-                    tempRanking.Add((info, pd));
-                }
-                //ordenando o ranking pelo PD em ordem decrescente
-                var rankedList = tempRanking.OrderByDescending(x => x.PD).ToList();
-                //enviando para a fila na ordem do ranking
-                foreach (var (History, PD) in rankedList)
-                {
-                    var message = JsonSerializer.Serialize(History);
-                    var body = Encoding.UTF8.GetBytes(message);
-                    await producerChannel.BasicPublishAsync(exchange: "",
-                                                    routingKey: "UpdatedHistory",
-                                                    body: body);
-                }
+
+                var message = JsonSerializer.Serialize(newInfo);
+                var body = Encoding.UTF8.GetBytes(message);
+
+                await producerChannel.BasicPublishAsync(exchange: string.Empty,
+                                                 routingKey: "FinalHistory",
+                                                 body: body);
             }
-            catch (Exception ex)
+
+            //ordenando a lista tempRanking 
+            tempRanking = tempRanking.OrderByDescending(x => x.PD).ToList();
+
+            //atribuindo os pontos e colocação de cada piloto e de cada equipe conforme sua colocação na lista tempRanking
+            int[] points = { 25, 18, 15, 12, 10, 8, 6, 4, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+            for (int i = 0; i < tempRanking.Count; i++)
             {
-                _logger.LogError(ex, "An error occurred while producing updated engineering infos to queue.");
+                _logger.LogError(ex, "An error occurred while producing engineering infos for event.");
+
             }
+
         }
+
     }
 }

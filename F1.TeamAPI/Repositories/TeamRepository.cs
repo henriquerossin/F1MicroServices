@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using F1.Models.DTOs.TeamDTOs.TeamDTOs;
+using F1.Models.TeamModels;
 using F1.TeamAPI.Data;
 using F1.TeamAPI.Repositories.Interfaces;
 using Microsoft.Data.SqlClient;
@@ -17,7 +18,7 @@ namespace F1.TeamAPI.Repositories
 
         public async Task<List<TeamResponseDTO>> GetAllTeamsAsync()
         {
-            try
+            try//vai se tratar gatooota
             {
                 var sql = @"SELECT Id, Name, Points, Placement 
                            FROM Team 
@@ -33,14 +34,17 @@ namespace F1.TeamAPI.Repositories
 
         }
 
-        public async Task CreateTeamAsync(TeamRequestDTO dto)
+        public async Task CreateTeamAsync(Team team)
         {
             try
             {
                 var sql = @"INSERT INTO Team (Name, Points, Placement, IsActive)
-                          VALUES (@Name, @Points, @Placement, @IsAcitive)";
+                          VALUES (@Name, @Points, @Placement, @IsActive)";
 
-                await _connection.ExecuteAsync(sql, new { dto.Name, dto.Points, dto.Placement, dto.IsActive }); //usuario so informa o nome, o resto vai 0 pelo contrutor
+                var id = await _connection.ExecuteScalarAsync<int>(sql, team);
+
+                typeof(Team).GetProperty(nameof(Team.Id))!.SetValue(team, id);
+
             }
             catch (Exception ex)
             {
