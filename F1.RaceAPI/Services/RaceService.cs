@@ -1,4 +1,5 @@
-﻿using F1.Models.DTOs.HistoryDTOs;
+﻿using F1.Models.DTOs.CompetitionDTOs;
+using F1.Models.DTOs.HistoryDTOs;
 using F1.RaceAPI.Repositories.Interfaces;
 using F1.RaceAPI.Services.Interfaces;
 using RabbitMQ.Client;
@@ -10,14 +11,20 @@ namespace F1.RaceAPI.Services
 {
     public class RaceService : IRaceService
     {
+        // TODO: Implement proper error handling and logging
         private readonly ILogger<RaceService> _logger;
+
         private readonly IRaceRepository _raceRepository;
+
+        private readonly HttpClient _client;
+
         private int _currentEventType;
 
-        public RaceService(ILogger<RaceService> logger, IRaceRepository raceRepository)
+        public RaceService(ILogger<RaceService> logger, IRaceRepository raceRepository, HttpClient client)
         {
             _logger = logger;
             _raceRepository = raceRepository;
+            _client = client;
         }
 
         public List<HistoryDTO> historyList = new List<HistoryDTO>();
@@ -91,6 +98,8 @@ namespace F1.RaceAPI.Services
                     SecondEngineerCp = history.SecondEngineerCp,
                 };
 
+                var circuit = await GetCircuitIdName();
+
                 FinalHistoryResponseDTO finalEvent = null;
 
                 lock (historyList)
@@ -104,8 +113,11 @@ namespace F1.RaceAPI.Services
                             Id = MongoDB.Bson.ObjectId.GenerateNewId().ToString(),
                             CreatedAt = DateTime.UtcNow,
                             EventType = _currentEventType,
-
-                            // TODO: pick which Circuit are we racing on from Wayne API
+                            CompetitionId = new CompetitionHistoryResponseDTO
+                            {
+                                Id = circuit.Id,
+                                Name = circuit.Name
+                            },
 
                             HistoryList = historyList.ToList()
                         };
@@ -145,6 +157,17 @@ namespace F1.RaceAPI.Services
                 autoAck: true,
                 consumer: consumer
             );
+        }
+
+        public async Task<CircuitHistoryIdNameResponseDTO?> GetCircuitIdName()
+        {
+            var response = await _client.GetAsync(_client.BaseAddress + "GetCircuitIdName");
+
+            var body = await response.Content.ReadAsStringAsync();
+
+            var finalBody = JsonSerializer.Deserialize<CircuitHistoryIdNameResponseDTO>(body);
+
+            return finalBody;
         }
     }
 }
