@@ -8,7 +8,7 @@ namespace F1.RaceAPI.Repositories
     public class RaceRepository : IRaceRepository
     {
         private readonly ILogger<RaceRepository> _logger;
-        private readonly IMongoCollection<HistoryDTO> _collection;
+        private readonly IMongoCollection<FinalHistoryResponseDTO> _collection;
 
         public RaceRepository(ILogger<RaceRepository> logger, ConnectionDB collection)
         {
@@ -16,7 +16,7 @@ namespace F1.RaceAPI.Repositories
             _collection = collection.GetCollection();
         }
 
-        public async Task SaveEventAsync(HistoryDTO history)
+        public async Task SaveEventAsync(FinalHistoryResponseDTO history)
         {
             try
             {
@@ -30,10 +30,10 @@ namespace F1.RaceAPI.Repositories
             }
         }
 
-        public async Task<HistoryDTO> GetLastEventAsync()
+        public async Task<FinalHistoryResponseDTO> GetLastEventAsync()
         {
             return await _collection
-            .Find(FilterDefinition<HistoryDTO>.Empty)
+            .Find(FilterDefinition<FinalHistoryResponseDTO>.Empty)
             .SortByDescending(x => x.CreatedAt)
             .Limit(1)
             .FirstOrDefaultAsync();

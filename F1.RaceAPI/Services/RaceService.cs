@@ -1,4 +1,5 @@
-﻿using F1.Models.DTOs.HistoryDTOs;
+﻿using F1.Models.DTOs.CompetitionDTOs;
+using F1.Models.DTOs.HistoryDTOs;
 using F1.RaceAPI.Repositories.Interfaces;
 using F1.RaceAPI.Services.Interfaces;
 using RabbitMQ.Client;
@@ -129,7 +130,12 @@ namespace F1.RaceAPI.Services
                 // TODO: pick wich Circuit are we racing on from Wayne API
 
                 // Consuming the History Queue
-                await _raceRepository.SaveEventAsync(mappedHistory);
+                await _raceRepository.SaveEventAsync(new FinalHistoryResponseDTO
+                {
+                    Id = MongoDB.Bson.ObjectId.GenerateNewId().ToString(),
+                    CreatedAt = DateTime.UtcNow,
+                    HistoryList = historyList
+                });
             };
 
             await channel.BasicConsumeAsync(
