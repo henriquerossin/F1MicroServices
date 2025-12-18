@@ -38,10 +38,5 @@ namespace F1.RaceAPI.Repositories
             .Limit(1)
             .FirstOrDefaultAsync();
         }
-
-        public async Task<long> CountByEventTypeAsync(int eventType)
-        {
-            return await _collection.CountDocumentsAsync(x => x.EventType == eventType);
-        }
     }
 }
