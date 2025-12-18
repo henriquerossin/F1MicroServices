@@ -4,8 +4,9 @@ namespace F1.EngineeringAPI.Services.Interfaces
 {
     public interface IEngineeringService
     {
-        Task<List<HistoryDTO>> ConsumingQueueAsync();
-        Task<List<HistoryDTO>> UpdatingInfosForEventsAsync(List<HistoryDTO> listHistories);
-        Task ProduceQueueAsync(List<HistoryDTO> listHistories);
+        Task<FinalHistoryResponseDTO> ConsumingQueueAsync();
+        Task<FinalHistoryResponseDTO> UpdatingInfosForEventsAsync(FinalHistoryResponseDTO finalHistory);
+        Task<List<HistoryDTO>> UpdatePlacementAsync(FinalHistoryResponseDTO finalHistory);
+        Task ProduceQueueAsync(HistoryDTO history);
     }
 }
