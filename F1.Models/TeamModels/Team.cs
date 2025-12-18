@@ -9,11 +9,10 @@
         public bool IsActive { get; private set; }
 
         public Team
-            (string name,
-            int points)
+            (string name)
         {
             Name = name;
-            Points = points;
+            Points = 0;
             IsActive = true;
             Placement = 0;
         }
