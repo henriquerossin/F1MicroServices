@@ -39,6 +39,32 @@ namespace F1.CompetitionAPI.Repositories
             }
         }
 
+        public async Task ConcludeCircuitAsync(int round)
+        {
+            try
+            {
+                //tratar logica no repository - passar pra service?
+                int round1 = round;
+                int round2 = round + 1;
+
+                var sql1 = @"UPDATE Circuit SET Ready = 0 WHERE [Round] = @Round";
+                await _connection.ExecuteAsync(sql1, new { Round = round1 });
+
+                var sql2 = @"UPDATE Circuit SET Ready = 1 WHERE [Round] = @Round";
+                await _connection.ExecuteAsync(sql2, new { Round = round2 });
+            }
+            catch (SqlException ex)
+            {
+                _logger.LogError(ex, " Error!");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, " Error!");
+                throw;
+            }
+        }
+
         public Task<int> CountActivesAsync()
         {
             try
@@ -129,6 +155,28 @@ namespace F1.CompetitionAPI.Repositories
                 var sql = @"SELECT Id, [Name] FROM Circuit WHERE Ready = 1";
 
                 var circuit = await _connection.QueryFirstOrDefaultAsync<GetCircuitIdAndNameDTO>(sql);
+
+                return circuit;
+            }
+            catch (SqlException ex)
+            {
+                _logger.LogError(ex, " Error!");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, " Error!");
+                throw;
+            }
+        }
+
+        public async Task<CircuitResponseDTO> GetCircuitReadyAsync()
+        {
+            try
+            {
+                var sql = @"SELECT Id, [Name], Country, Laps, Round, Active, Ready FROM Circuit WHERE Ready = 1";
+
+                var circuit = await _connection.QueryFirstOrDefaultAsync<CircuitResponseDTO>(sql);
 
                 return circuit;
             }

@@ -60,6 +60,29 @@ namespace F1.CompetitionAPI.Services
             }
         }
 
+        public async Task ConcludeCircuitAsync()
+        {
+            //VER O QUE ACONTECE NA ULTIMA VEZ QUE FOR EXECUTAR ISSO
+            try
+            {
+                var circuit = await _repository.GetCircuitReadyAsync();
+
+                int round = circuit.Round;
+
+                await _repository.ConcludeCircuitAsync(round);
+            }
+            catch (SqlException ex)
+            {
+                _logger.LogError(ex, " Error!");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, " Error!");
+                throw;
+            }
+        }
+
         public async Task<int> CountActivesAsync()
         {
             try
@@ -193,10 +216,36 @@ namespace F1.CompetitionAPI.Services
             }
         }
 
+        public async Task<CircuitResponseDTO> GetCircuitReadyAsync()
+        {
+            try
+            {
+                var tempIsActive = await IsTempStarted();
+
+                if (tempIsActive is true)
+                {
+                    return await _repository.GetCircuitReadyAsync();
+                }
+                else
+                {
+                    _logger.LogError("Impossible to get the circuit before temp start");
+                    throw new InvalidOperationException("Impossible to get the circuit before temp start");
+                }
+            }
+            catch (SqlException ex)
+            {
+                _logger.LogError(ex, " Error!");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, " Error!");
+                throw;
+            }
+        }
+
         public async Task InactivateCircuitAsync(int id)
         {
-
-
             try
             {
                 var tempIsActive = await IsTempStarted();

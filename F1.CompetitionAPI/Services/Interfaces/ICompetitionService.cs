@@ -14,5 +14,7 @@ namespace F1.CompetitionAPI.Services.Interfaces
         Task StartTempAsync();
         Task<ActionResult<List<GetCircuitDTO>>> GetAllCircuitsActivesOrdenedAsync();
         Task<ActionResult<GetCircuitIdAndNameDTO>> GetCircuitIdAndName();
+        Task ConcludeCircuitAsync();
+        Task<CircuitResponseDTO> GetCircuitReadyAsync();
     }
 }
