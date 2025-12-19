@@ -3,6 +3,7 @@ using F1.Models.DTOs.TeamDTOs.CarDTOs;
 using F1.Models.DTOs.TeamDTOs.EngineerDTOs;
 using F1.Models.DTOs.TeamDTOs.PilotDTOs;
 using F1.Models.DTOs.TeamDTOs.TeamDTOs;
+using F1.TeamAPI.Repositories.Interfaces;
 
 namespace F1.Application.Services.Validation
 {
@@ -56,4 +57,28 @@ namespace F1.Application.Services.Validation
                 throw new Exception("Uma equipe deve ter exatamente 2 chefes");
         }
     }
+
+
+
+    public class TeamCountValidator
+    {
+        private readonly ITeamRepository _teamRepository;
+
+        public TeamCountValidator(ITeamRepository teamRepository)
+        {
+            _teamRepository = teamRepository;
+        }
+
+        public async Task ValidateAsync()
+        {
+            var teams = await _teamRepository.GetAllTeamsAsync();
+
+            if (teams.Count != 11)
+                throw new Exception("A corrida exige exatamente 11 equipes ativas");
+        }
+    }
+
+
+
+
 }

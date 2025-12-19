@@ -6,7 +6,7 @@ namespace F1.TeamAPI.Controllers
     [ApiController]
     public class TeamController : ControllerBase
     {
-        [HttpPost("GerenateTeam")]
+    
 
     }
 }
