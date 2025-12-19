@@ -1,4 +1,6 @@
-﻿using F1.CompetitionAPI.Controllers;
+﻿using System.Text.Json;
+using Azure;
+using F1.CompetitionAPI.Controllers;
 using F1.CompetitionAPI.Repositories.Interfaces;
 using F1.CompetitionAPI.Services.Interfaces;
 using F1.Models.CompetitionModels;
@@ -12,12 +14,15 @@ namespace F1.CompetitionAPI.Services
     {
         private readonly ILogger<CompetitionService> _logger;
         private readonly ICompetitionRepository _repository;
+        private readonly HttpClient _clientRace;
+        private readonly HttpClient _clientTeam;
 
-        public CompetitionService(ILogger<CompetitionService> logger, ICompetitionRepository repository)
+        public CompetitionService(ILogger<CompetitionService> logger, ICompetitionRepository repository , HttpClient clientRace, HttpClient clientTeam)
         {
             _logger = logger;
             _repository = repository;
-
+            _clientRace = clientRace;
+            _clientTeam = clientTeam;
         }
 
         public async Task ActivateCircuitAsync(int id)
@@ -67,9 +72,10 @@ namespace F1.CompetitionAPI.Services
             {
                 var circuit = await _repository.GetCircuitReadyAsync();
 
-                int round = circuit.Round;
+                int round1 = circuit.Round;
+                int round2 = circuit.Round + 1;
 
-                await _repository.ConcludeCircuitAsync(round);
+                await _repository.ConcludeCircuitAsync(round1, round2);
             }
             catch (SqlException ex)
             {
@@ -162,7 +168,7 @@ namespace F1.CompetitionAPI.Services
             }
         }
 
-        public async Task<ActionResult<List<GetCircuitDTO>>> GetAllCircuitsActivesOrdenedAsync()
+        public async Task<List<GetCircuitDTO>> GetAllCircuitsActivesOrdenedAsync()
         {
             try
             {
@@ -198,7 +204,7 @@ namespace F1.CompetitionAPI.Services
             }
         }
 
-        public async Task<ActionResult<GetCircuitIdAndNameDTO>> GetCircuitIdAndName()
+        public async Task<GetCircuitIdAndNameDTO> GetCircuitIdAndName()
         {
             try
             {
@@ -320,7 +326,7 @@ namespace F1.CompetitionAPI.Services
                     }
                     else
                     {
-                        var cadastroCompleto = true; // validação que pego no endpoint do pedro 
+                        var cadastroCompleto = await ValidateTeamAsync(); // validação que pego no endpoint do pedro 
                         if (cadastroCompleto is false)
                         {
                             _logger.LogError("Temporada só começa com o cadastros completo de todas as equipes");
@@ -328,11 +334,55 @@ namespace F1.CompetitionAPI.Services
                         }
                         else
                         {
-                            var circuits = await _repository.GetAllCircuitsActivesOrdenedAsync();
+                            //var circuits = await _repository.GetAllCircuitsActivesOrdenedAsync();
                             await _repository.StartTemp();
+                            await PostHistoryAsync();
+
                         }
                     }
                 }
+            }
+            catch (SqlException ex)
+            {
+                _logger.LogError(ex, " Error!");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, " Error!");
+                throw;
+            }
+        }
+
+        public async Task PostHistoryAsync()
+        {
+            try
+            {
+                await _clientRace.PostAsync(_clientRace.BaseAddress + "Circuit/1/Event/1", null);
+            }
+            catch (SqlException ex)
+            {
+                _logger.LogError(ex, " Error!");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, " Error!");
+                throw;
+            }
+        }
+
+        public async Task<bool> ValidateTeamAsync()
+        {
+            try
+            {
+                var response = await _clientRace.GetAsync(_clientTeam.BaseAddress + "validateTeam ");
+
+                var body = await response.Content.ReadAsStringAsync();
+
+                var finalBody = JsonSerializer.Deserialize<bool>(body);
+
+                return finalBody;
             }
             catch (SqlException ex)
             {

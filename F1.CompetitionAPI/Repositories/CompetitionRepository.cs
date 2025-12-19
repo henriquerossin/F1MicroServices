@@ -39,14 +39,10 @@ namespace F1.CompetitionAPI.Repositories
             }
         }
 
-        public async Task ConcludeCircuitAsync(int round)
+        public async Task ConcludeCircuitAsync(int round1, int round2)
         {
             try
             {
-                //tratar logica no repository - passar pra service?
-                int round1 = round;
-                int round2 = round + 1;
-
                 var sql1 = @"UPDATE Circuit SET Ready = 0 WHERE [Round] = @Round";
                 await _connection.ExecuteAsync(sql1, new { Round = round1 });
 
@@ -107,7 +103,7 @@ namespace F1.CompetitionAPI.Repositories
             }
         }
 
-        public async Task<ActionResult<List<GetCircuitDTO>>> GetAllCircuitsActivesOrdenedAsync()
+        public async Task<List<GetCircuitDTO>> GetAllCircuitsActivesOrdenedAsync()
         {
 
             try
