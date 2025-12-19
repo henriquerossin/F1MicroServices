@@ -1,4 +1,6 @@
-﻿using F1.CompetitionAPI.Controllers;
+﻿using System.Text.Json;
+using Azure;
+using F1.CompetitionAPI.Controllers;
 using F1.CompetitionAPI.Repositories.Interfaces;
 using F1.CompetitionAPI.Services.Interfaces;
 using F1.Models.CompetitionModels;
@@ -12,12 +14,14 @@ namespace F1.CompetitionAPI.Services
     {
         private readonly ILogger<CompetitionService> _logger;
         private readonly ICompetitionRepository _repository;
+        private readonly IHttpClientFactory _httpClientFactory;
 
-        public CompetitionService(ILogger<CompetitionService> logger, ICompetitionRepository repository)
+
+        public CompetitionService(ILogger<CompetitionService> logger, ICompetitionRepository repository , IHttpClientFactory httpClientFactory)
         {
             _logger = logger;
             _repository = repository;
-
+            _httpClientFactory = httpClientFactory;
         }
 
         public async Task ActivateCircuitAsync(int id)
@@ -47,6 +51,30 @@ namespace F1.CompetitionAPI.Services
                     throw new InvalidOperationException("Temp is alredy started");
                 }
 
+            }
+            catch (SqlException ex)
+            {
+                _logger.LogError(ex, " Error!");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, " Error!");
+                throw;
+            }
+        }
+
+        public async Task ConcludeCircuitAsync()
+        {
+            //VER O QUE ACONTECE NA ULTIMA VEZ QUE FOR EXECUTAR ISSO
+            try
+            {
+                var circuit = await _repository.GetCircuitReadyAsync();
+
+                int round1 = circuit.Round;
+                int round2 = circuit.Round + 1;
+
+                await _repository.ConcludeCircuitAsync(round1, round2);
             }
             catch (SqlException ex)
             {
@@ -139,7 +167,7 @@ namespace F1.CompetitionAPI.Services
             }
         }
 
-        public async Task<ActionResult<List<GetCircuitDTO>>> GetAllCircuitsActivesOrdenedAsync()
+        public async Task<List<GetCircuitDTO>> GetAllCircuitsActivesOrdenedAsync()
         {
             try
             {
@@ -175,7 +203,7 @@ namespace F1.CompetitionAPI.Services
             }
         }
 
-        public async Task<ActionResult<GetCircuitIdAndNameDTO>> GetCircuitIdAndName()
+        public async Task<GetCircuitIdAndNameDTO> GetCircuitIdAndName()
         {
             try
             {
@@ -193,10 +221,36 @@ namespace F1.CompetitionAPI.Services
             }
         }
 
+        public async Task<CircuitResponseDTO> GetCircuitReadyAsync()
+        {
+            try
+            {
+                var tempIsActive = await IsTempStarted();
+
+                if (tempIsActive is true)
+                {
+                    return await _repository.GetCircuitReadyAsync();
+                }
+                else
+                {
+                    _logger.LogError("Impossible to get the circuit before temp start");
+                    throw new InvalidOperationException("Impossible to get the circuit before temp start");
+                }
+            }
+            catch (SqlException ex)
+            {
+                _logger.LogError(ex, " Error!");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, " Error!");
+                throw;
+            }
+        }
+
         public async Task InactivateCircuitAsync(int id)
         {
-
-
             try
             {
                 var tempIsActive = await IsTempStarted();
@@ -271,7 +325,7 @@ namespace F1.CompetitionAPI.Services
                     }
                     else
                     {
-                        var cadastroCompleto = true; // validação que pego no endpoint do pedro 
+                        var cadastroCompleto = await ValidateTeamAsync(); // validação que pego no endpoint do pedro 
                         if (cadastroCompleto is false)
                         {
                             _logger.LogError("Temporada só começa com o cadastros completo de todas as equipes");
@@ -279,11 +333,54 @@ namespace F1.CompetitionAPI.Services
                         }
                         else
                         {
-                            var circuits = await _repository.GetAllCircuitsActivesOrdenedAsync();
+                            //var circuits = await _repository.GetAllCircuitsActivesOrdenedAsync();
                             await _repository.StartTemp();
+                            await PostHistoryAsync();
+
                         }
                     }
                 }
+            }
+            catch (SqlException ex)
+            {
+                _logger.LogError(ex, " Error!");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, " Error!");
+                throw;
+            }
+        }
+
+        public async Task PostHistoryAsync()
+        {
+            try
+            {
+                var client = _httpClientFactory.CreateClient("RaceClient");
+                await client.PostAsync("Circuit/1/Event/1", null);
+            }
+            catch (SqlException ex)
+            {
+                _logger.LogError(ex, " Error!");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, " Error!");
+                throw;
+            }
+        }
+
+        public async Task<bool> ValidateTeamAsync()
+        {
+            try
+            {
+                var client = _httpClientFactory.CreateClient("TeamClient");
+
+                var response = await client.GetAsync("validateTeam");
+
+                return await response.Content.ReadFromJsonAsync<bool>();
             }
             catch (SqlException ex)
             {

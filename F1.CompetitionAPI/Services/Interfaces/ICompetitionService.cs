@@ -12,7 +12,11 @@ namespace F1.CompetitionAPI.Services.Interfaces
         Task<int> CountActivesAsync();
         Task<bool> IsTempStarted();
         Task StartTempAsync();
-        Task<ActionResult<List<GetCircuitDTO>>> GetAllCircuitsActivesOrdenedAsync();
-        Task<ActionResult<GetCircuitIdAndNameDTO>> GetCircuitIdAndName();
+        Task<List<GetCircuitDTO>> GetAllCircuitsActivesOrdenedAsync();
+        Task<GetCircuitIdAndNameDTO> GetCircuitIdAndName();
+        Task ConcludeCircuitAsync();
+        Task<CircuitResponseDTO> GetCircuitReadyAsync();
+        Task PostHistoryAsync();
+        Task<bool> ValidateTeamAsync();
     }
 }
