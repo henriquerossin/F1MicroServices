@@ -23,7 +23,7 @@ CREATE TABLE Pilot (
     Status TINYINT NOT NULL DEFAULT 1,
     Experience DECIMAL(5,3) NOT NULL,
     Handicap DECIMAL(5,2) NOT NULL,
-    Points INT NOT NULL,
+    Points INT NOT NULL DEFAULT 0,
     TeamId INT NOT NULL,
     Position INT NOT NULL DEFAULT 0,
 

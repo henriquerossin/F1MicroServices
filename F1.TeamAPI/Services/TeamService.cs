@@ -78,30 +78,30 @@ namespace F1.TeamAPI.Services
                 _teamBossesValidator = teamBossesValidator;
             }
 
-public async Task<bool> ValidateAsync()
-{
-    if (!await _teamCountValidation.ValidateAsync())
-        return false;
+            public async Task<bool> ValidateAsync()
+            {
+                if (!await _teamCountValidation.ValidateAsync())
+                    return false;
 
-    var teams = await _teamRepository.GetAllTeamsAsync();
+                var teams = await _teamRepository.GetAllTeamsAsync();
 
-    foreach (var team in teams)
-    {
-        if (!await _teamPilotsValidator.ValidateAsync(team.Id))
-            return false;
+                foreach (var team in teams)
+                {
+                    if (!await _teamPilotsValidator.ValidateAsync(team.Id))
+                        return false;
 
-        if (!await _teamCarsValidator.ValidateAsync(team.Id))
-            return false;
+                    if (!await _teamCarsValidator.ValidateAsync(team.Id))
+                        return false;
 
-        if (!await _carEngineersValidator.ValidateAsync(team.Id))
-            return false;
+                    if (!await _carEngineersValidator.ValidateAsync(team.Id))
+                        return false;
 
-        if (!await _teamBossesValidator.ValidateAsync(team.Id))
-            return false;
-    }
+                    if (!await _teamBossesValidator.ValidateAsync(team.Id))
+                        return false;
+                }
 
-    return true;
-}
+                return true;
+            }
 
         }
 

@@ -33,8 +33,6 @@ namespace F1.TeamAPI.Controllers
             return Ok();
         }
 
+
     }
-
-
-
 }
