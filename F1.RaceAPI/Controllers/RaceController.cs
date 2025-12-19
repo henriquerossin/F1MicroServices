@@ -16,18 +16,18 @@ namespace F1.RaceAPI.Controllers
             _raceService = raceService;
         }
 
-        [HttpPost]
-        public async Task<IActionResult> PostHistoryAsync()
+        [HttpPost("/Circuit/{idCircuit}/Event/{idEvent}")]
+        public async Task<IActionResult> PostHistoryAsync(int idCircuit, int idEvent)
         {
             try
             {
-                await _raceService.EventWorkerAsync();
+                await _raceService.EventWorkerAsync(idCircuit, idEvent);
                 return Ok();
             }
             catch (Exception e)
             {
                 _logger.LogError(e, "Error while trying to start event worker.");
-                throw;
+                return BadRequest();
             }
         }
     }

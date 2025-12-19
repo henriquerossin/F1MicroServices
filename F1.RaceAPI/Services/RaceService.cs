@@ -29,7 +29,7 @@ namespace F1.RaceAPI.Services
 
         public List<HistoryDTO> historyList = new List<HistoryDTO>();
 
-        public async Task EventWorkerAsync()
+        public async Task EventWorkerAsync(int idRound, int idEvent)
         {
             // Conecting to RabbitMQ
             var factory = new ConnectionFactory { HostName = "localhost" };
@@ -67,6 +67,19 @@ namespace F1.RaceAPI.Services
                 _currentEventType = 1;
             }
 
+            // Validating the request before consuming the history queue
+            if (idEvent != _currentEventType)
+            {
+                throw new InvalidOperationException($"Invalid Race! The next race is {_currentEventType}");
+            }
+
+            var currentCircuit = await GetCircuitIdName();
+
+            if (currentCircuit is null || currentCircuit.Id != idRound)
+            {
+                throw new InvalidOperationException($"Wrong circuit! The next circuit is {currentCircuit}");
+            }
+
             // Creating consumer
             var consumer = new AsyncEventingBasicConsumer(channel);
 
@@ -98,7 +111,7 @@ namespace F1.RaceAPI.Services
                     SecondEngineerCp = history.SecondEngineerCp,
                 };
 
-                var circuit = await GetCircuitIdName();
+                var circuit = currentCircuit;
 
                 FinalHistoryResponseDTO finalEvent = null;
 

@@ -38,5 +38,15 @@ namespace F1.RaceAPI.Repositories
             .Limit(1)
             .FirstOrDefaultAsync();
         }
+
+        public async Task<int> GetLastCircuitAsync()
+        {
+            var teste = await _collection
+            .Find(FilterDefinition<FinalHistoryResponseDTO>.Empty)
+            .SortByDescending(x => x.CreatedAt).Limit(1)
+            .FirstOrDefaultAsync();
+
+            return teste.EventType;
+        }
     }
 }

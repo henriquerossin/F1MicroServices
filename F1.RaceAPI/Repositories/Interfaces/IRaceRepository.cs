@@ -6,5 +6,6 @@ namespace F1.RaceAPI.Repositories.Interfaces
     {
         Task SaveEventAsync(FinalHistoryResponseDTO history);
         Task<FinalHistoryResponseDTO> GetLastEventAsync();
+        Task<int> GetLastCircuitAsync();
     }
 }
