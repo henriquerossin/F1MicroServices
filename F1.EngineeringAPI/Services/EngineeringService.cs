@@ -330,7 +330,7 @@ namespace F1.EngineeringAPI.Services
                 using var connection = await factory.CreateConnectionAsync();
                 using var producerChannel = await connection.CreateChannelAsync();
 
-                await producerChannel.QueueDeclareAsync(queue: "FinalHistory",
+                await producerChannel.QueueDeclareAsync(queue: "UpdateHistory",
                                                  durable: true,
                                                  exclusive: false,
                                                  autoDelete: false,
@@ -340,7 +340,7 @@ namespace F1.EngineeringAPI.Services
                 var body = Encoding.UTF8.GetBytes(message);
 
                 await producerChannel.BasicPublishAsync(exchange: string.Empty,
-                                                 routingKey: "FinalHistory",
+                                                 routingKey: "UpdateHistory",
                                                  body: body);
             }
             catch (Exception ex)
@@ -348,7 +348,5 @@ namespace F1.EngineeringAPI.Services
                 _logger.LogError(ex, "An error occurred while producing engineering infos for event.");
             }
         }
-
     }
-
 }
