@@ -3,7 +3,6 @@ using F1.Models.DTOs.HistoryDTOs;
 using F1.Models.DTOs.TeamDTOs.CarDTOs;
 using F1.Models.DTOs.TeamDTOs.PilotDTOs;
 using F1.Models.DTOs.TeamDTOs.TeamDTOs;
-using Microsoft.AspNetCore.Connections;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System.Text;
@@ -13,11 +12,13 @@ namespace F1.EngineeringAPI.Services
 {
     public class EngineeringService : IEngineeringService
     {
-        public readonly ILogger<EngineeringService> _logger;
+        private readonly ILogger<EngineeringService> _logger;
+        private readonly HttpClient _clientTeam;
 
-        public EngineeringService(ILogger<EngineeringService> logger)
+        public EngineeringService(ILogger<EngineeringService> logger, HttpClient clientTeam)
         {
             _logger = logger;
+            _clientTeam = clientTeam;
         }
 
 
@@ -150,7 +151,6 @@ namespace F1.EngineeringAPI.Services
                     },
                     SecondEngineerCa = info.SecondEngineerCa,
                     SecondEngineerCp = info.SecondEngineerCp,
-                    EventType = info.EventType
                 };
 
                 //colocando o novo obj na nova lista
@@ -178,7 +178,7 @@ namespace F1.EngineeringAPI.Services
             foreach (var info in finalHistory.HistoryList)
             {
                 decimal firstPD = 0m, secondPD = 0m, firstRandom, secondRandom;
-                if (info.EventType == 4 || info.EventType == 5)
+                if (finalHistory.EventType == 4 || finalHistory.EventType == 5)
                 {
                     Random random = new Random();
                     firstRandom = (decimal)(random.Next(1, 11));
@@ -260,7 +260,6 @@ namespace F1.EngineeringAPI.Services
                                 SecondCar = itemhist.SecondCar,
                                 SecondEngineerCa = itemhist.SecondEngineerCa,
                                 SecondEngineerCp = itemhist.SecondEngineerCp,
-                                EventType = itemhist.EventType
                             };
                             newListHistPilot.Add(newInfo);
                         }
@@ -297,7 +296,6 @@ namespace F1.EngineeringAPI.Services
                         SecondCar = item.SecondCar,
                         SecondEngineerCa = item.SecondEngineerCa,
                         SecondEngineerCp = item.SecondEngineerCp,
-                        EventType = item.EventType
                     };
 
                     newListHistTeam.Add(newInfo);
@@ -312,43 +310,44 @@ namespace F1.EngineeringAPI.Services
         {
             try
             {
-                var newInfo = new HistoryDTO
-                {
-                    Team = history.Team,
-                    FirstPilot = history.FirstPilot,
-                    FirstCar = history.FirstCar,
-                    FirstEngineerCa = history.FirstEngineerCa,
-                    FirstEngineerCp = history.FirstEngineerCp,
-                    SecondPilot = history.SecondPilot,
-                    SecondCar = history.SecondCar,
-                    SecondEngineerCa = history.SecondEngineerCa,
-                    SecondEngineerCp = history.SecondEngineerCp,
-                    EventType = history.EventType
-                };
+                //vou ver se funciona com isso comentado
+                //var newInfo = new HistoryDTO
+                //{
+                //    Team = history.Team,
+                //    FirstPilot = history.FirstPilot,
+                //    FirstCar = history.FirstCar,
+                //    FirstEngineerCa = history.FirstEngineerCa,
+                //    FirstEngineerCp = history.FirstEngineerCp,
+                //    SecondPilot = history.SecondPilot,
+                //    SecondCar = history.SecondCar,
+                //    SecondEngineerCa = history.SecondEngineerCa,
+                //    SecondEngineerCp = history.SecondEngineerCp,
+                //    EventType = history.EventType
+                //};
 
                 var factory = new ConnectionFactory() { HostName = "localhost" };
                 using var connection = await factory.CreateConnectionAsync();
                 using var producerChannel = await connection.CreateChannelAsync();
 
-                await producerChannel.QueueDeclareAsync(queue: "FinalHistory",
+                await producerChannel.QueueDeclareAsync(queue: "UpdateHistory",
                                                  durable: true,
                                                  exclusive: false,
                                                  autoDelete: false,
                                                  arguments: null);
 
-                var message = JsonSerializer.Serialize(newInfo);
+                var message = JsonSerializer.Serialize(history);
                 var body = Encoding.UTF8.GetBytes(message);
 
                 await producerChannel.BasicPublishAsync(exchange: string.Empty,
-                                                 routingKey: "FinalHistory",
+                                                 routingKey: "UpdateHistory",
                                                  body: body);
+
+                await _clientTeam.PostAsync(_clientTeam.BaseAddress + "UpdateCurrentInfo", null);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "An error occurred while producing engineering infos for event.");
             }
         }
-
     }
-
 }
