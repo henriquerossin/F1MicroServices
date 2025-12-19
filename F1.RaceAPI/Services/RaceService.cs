@@ -250,7 +250,7 @@ namespace F1.RaceAPI.Services
             {
                 var client = _httpClientFactory.CreateClient("UpdateInfosForEvent");
 
-                var response = await client.GetAsync("Engineering");
+                var response = await client.PutAsync("Engineering", null);
             }
             catch (Exception e)
             {
