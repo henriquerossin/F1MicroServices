@@ -9,5 +9,7 @@ namespace F1.TeamAPI.Repositories.Interfaces
         Task CreatePilotAsync(PilotRequestDTO dto);
         Task UpdatePilotAsync(int id, PilotRequestDTO pilot);
         Task DeletePilotAsync(int id);
+
+        Task UpdatePilotHandicapAsync(int pilotId, decimal handicap, int points);
     }
 }

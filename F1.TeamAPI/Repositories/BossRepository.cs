@@ -21,9 +21,9 @@ namespace F1.TeamAPI.Repositories
             {
                 var sql = @"
                     INSERT INTO Boss
-                    (Name, Surname, Age, Type, Status, TeamId, IsActive)
+                    (Name, Surname, Age, Type, Status, TeamId)
                     VALUES
-                    (@Name, @Surname, @Age, @Type, @Status, @TeamId, 1);
+                    (@Name, @Surname, @Age, @Type, @Status, @TeamId);
                 ";
 
                 await _connection.ExecuteAsync(sql, dto);

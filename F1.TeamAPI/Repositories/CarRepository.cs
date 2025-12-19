@@ -19,14 +19,33 @@ namespace F1.TeamAPI.Repositories
         {
             try
             {
-                var sql = @"
+                const string sql = @"
                     INSERT INTO Car
-                    (AerodynamicCoefficent, PowerCoefficient, Weight, Model, PilotId, IsActive)
+                    (
+                        AerodynamicCoefficent,
+                        PowerCoefficient,
+                        Weight,
+                        Model,
+                        PilotId
+                    )
                     VALUES
-                    (@AerodynamicCoefficent, @PowerCoefficient, @Weight, @Model, @PilotId, 1);
+                    (
+                        @AerodynamicCoefficent,
+                        @PowerCoefficient,
+                        @Weight,
+                        @Model,
+                        @PilotId
+                    );
                 ";
 
-                await _connection.ExecuteAsync(sql, dto);
+                await _connection.ExecuteAsync(sql, new
+                {
+                    dto.AerodynamicCoefficent,
+                    dto.PowerCoefficient,
+                    dto.Weight,
+                    dto.Model,
+                    dto.PilotId
+                });
             }
             catch (Exception ex)
             {
@@ -38,7 +57,11 @@ namespace F1.TeamAPI.Repositories
         {
             try
             {
-                var sql = @"UPDATE Car SET IsActive = 0 WHERE Id = @Id;";
+                const string sql = @"
+                    UPDATE Car
+                    SET IsActive = 0
+                    WHERE Id = @Id;
+                ";
 
                 await _connection.ExecuteAsync(sql, new { Id = id });
             }
@@ -52,7 +75,7 @@ namespace F1.TeamAPI.Repositories
         {
             try
             {
-                var sql = @"
+                const string sql = @"
                     SELECT
                         Id,
                         AerodynamicCoefficent,
@@ -76,7 +99,7 @@ namespace F1.TeamAPI.Repositories
         {
             try
             {
-                var sql = @"
+                const string sql = @"
                     SELECT
                         c.Id,
                         c.AerodynamicCoefficent,
@@ -87,10 +110,11 @@ namespace F1.TeamAPI.Repositories
                     FROM Car c
                     INNER JOIN Pilot p ON p.Id = c.PilotId
                     INNER JOIN Team t ON t.Id = p.TeamId
-                    WHERE t.Id = @TeamId
-                      AND c.IsActive = 1
-                      AND p.IsActive = 1
-                      AND t.IsActive = 1;
+                    WHERE
+                        t.Id = @TeamId
+                        AND c.IsActive = 1
+                        AND p.Status = 1
+                        AND t.IsActive = 1;
                 ";
 
                 return (await _connection.QueryAsync<CarResponseDTO>(
@@ -108,7 +132,7 @@ namespace F1.TeamAPI.Repositories
         {
             try
             {
-                var sql = @"
+                const string sql = @"
                     UPDATE Car
                     SET
                         AerodynamicCoefficent = @AerodynamicCoefficent,
@@ -116,8 +140,9 @@ namespace F1.TeamAPI.Repositories
                         Weight = @Weight,
                         Model = @Model,
                         PilotId = @PilotId
-                    WHERE Id = @Id
-                      AND IsActive = 1;
+                    WHERE
+                        Id = @Id
+                        AND IsActive = 1;
                 ";
 
                 await _connection.ExecuteAsync(sql, new
@@ -133,6 +158,33 @@ namespace F1.TeamAPI.Repositories
             catch (Exception ex)
             {
                 throw new Exception("Erro ao atualizar carro: " + ex.Message);
+            }
+        }
+
+        public async Task UpdateCACPByPilotIdAsync(int pilotId, decimal ca, decimal cp)
+        {
+            try
+            {
+                const string sql = @"
+                    UPDATE Car
+                    SET
+                        AerodynamicCoefficent = @AerodynamicCoefficent,
+                        PowerCoefficient = @PowerCoefficient
+                    WHERE
+                        PilotId = @PilotId
+                        AND IsActive = 1;
+                ";
+
+                await _connection.ExecuteAsync(sql, new
+                {
+                    PilotId = pilotId,
+                    AerodynamicCoefficent = ca,
+                    PowerCoefficient = cp
+                });
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao atualizar CA e CP: " + ex.Message);
             }
         }
     }
