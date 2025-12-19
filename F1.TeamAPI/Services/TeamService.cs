@@ -10,7 +10,7 @@ using F1.TeamAPI.Services.Interfaces;
 
 namespace F1.TeamAPI.Services
 {
-    public class TeamService : ITeamService
+    public class TeamService
     {
         private readonly ITeamRepository _teamRepo;
         private readonly TeamCreationValidator _validator;
@@ -23,27 +23,8 @@ namespace F1.TeamAPI.Services
             _validator = validator;
         }
 
-        public async Task<int> CreateCompletelyTeamManuallyAsync(
-            TeamRequestDTO teamDto,
-            List<PilotRequestDTO> pilotsDto,
-            List<CarRequestDTO> carsDto,
-            List<EngineerRequestDTO> engineersDto,
-            List<BossRequestDTO> bossesDto)
-        {
-            _validator.Validate(
-                teamDto,
-                pilotsDto,
-                carsDto,
-                engineersDto,
-                bossesDto);
 
-            var team = new Team(teamDto.Name);
-            await _teamRepo.CreateTeamAsync(team);
-
-            // criação dos outros membros vem depois
-
-            return team.Id;
+       
         }
     }
 
-}

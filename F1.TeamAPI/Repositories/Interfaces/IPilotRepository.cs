@@ -10,6 +10,6 @@ namespace F1.TeamAPI.Repositories.Interfaces
         Task UpdatePilotAsync(int id, PilotRequestDTO pilot);
         Task DeletePilotAsync(int id);
 
-        Task UpdatePilotHandicapAsync(int pilotId, decimal handicap, int points);
+        Task UpdatePilotHandicapAndPointsAsync(int pilotId, decimal handicap, int points);
     }
 }
