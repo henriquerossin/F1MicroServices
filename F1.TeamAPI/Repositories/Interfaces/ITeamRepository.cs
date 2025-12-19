@@ -1,5 +1,6 @@
 ﻿using F1.Models.DTOs.TeamDTOs.TeamDTOs;
 using F1.Models.TeamModels;
+using F1.TeamAPI.DTOs.TeamCreation;
 
 namespace F1.TeamAPI.Repositories.Interfaces
 {
@@ -10,5 +11,6 @@ namespace F1.TeamAPI.Repositories.Interfaces
         Task DeleteTeamAsync(int id);
 
         Task UpdateTeamPlacementAndPointsAsync(int teamId, int placement, int points);
+        Task CreateFullTeamAsync(CreateFullTeamRequestDTO dto);
     }
 }

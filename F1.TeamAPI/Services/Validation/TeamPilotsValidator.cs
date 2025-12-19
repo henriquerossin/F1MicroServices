@@ -11,13 +11,15 @@ namespace F1.TeamAPI.Services.Validation
             _pilotRepository = pilotRepository;
         }
 
-        public async Task ValidateAsync(int teamId)
+        public async Task<bool> ValidateAsync(int teamId)
         {
             var pilots = await _pilotRepository.GetPilotsByTeamAsync(teamId);
 
+            // Cada equipe deve ter exatamente 2 pilotos ativos
             if (pilots.Count != 2)
-                throw new Exception($"A equipe {teamId} não possui 2 pilotos ativos");
+                return false;
+
+            return true;
         }
     }
-
 }

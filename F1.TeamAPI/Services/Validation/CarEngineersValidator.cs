@@ -12,28 +12,36 @@ namespace F1.TeamAPI.Services.Validation
             _engineerRepository = engineerRepository;
         }
 
-        public async Task ValidateAsync(int teamId)
+        public async Task<bool> ValidateAsync(int teamId)
         {
             var engineers = await _engineerRepository.GetEngineersByTeamAsync(teamId);
 
-            var groupedByCar = engineers
-                .GroupBy(e => e.CarId);
+            // Agrupa engenheiros por carro
+            var groupedByCar = engineers.GroupBy(e => e.CarId);
 
             foreach (var carGroup in groupedByCar)
             {
+                // Cada carro deve ter exatamente 2 engenheiros
                 if (carGroup.Count() != 2)
-                    throw new Exception($"Carro {carGroup.Key} não possui 2 engenheiros");
+                    return false;
 
-                var types = carGroup.Select(e => e.Type).Distinct().ToList();
+                var types = carGroup
+                    .Select(e => e.Type)
+                    .Distinct()
+                    .ToList();
 
-                //if (types.Count != 2 ||
-                //    !types.Contains((int)EngineerType.CA) ||
-                //    !types.Contains((int)EngineerType.CP))
-                //{
-                //    throw new Exception($"Carro {carGroup.Key} deve ter engenheiros CA e CP");
-                //}
+                // Deve ter CA e CP
+                if (types.Count != 2)
+                    return false;
+
+                if (!types.Contains((int)EngineerType.CA))
+                    return false;
+
+                if (!types.Contains((int)EngineerType.CP))
+                    return false;
             }
+
+            return true;
         }
     }
-
 }

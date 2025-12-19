@@ -1,34 +1,39 @@
 ﻿using F1.Models.Enums;
 using F1.TeamAPI.Repositories.Interfaces;
-using MongoDB.Bson;
 
-namespace F1.TeamAPI.Services.Validation
+public class TeamBossesValidator
 {
-    public class TeamBossesValidator
+    private readonly IBossRepository _bossRepository;
+
+    public TeamBossesValidator(IBossRepository bossRepository)
     {
-        private readonly IBossRepository _bossRepository;
-
-        public TeamBossesValidator(IBossRepository bossRepository)
-        {
-            _bossRepository = bossRepository;
-        }
-
-        public async Task ValidateAsync(int teamId)
-        {
-            var bosses = await _bossRepository.GetBossesByTeamAsync(teamId);
-
-            if (bosses.Count != 2)
-                throw new Exception($"Equipe {teamId} não possui 2 chefes");
-
-            var types = bosses.Select(b => b.Type).Distinct().ToList();
-
-            //if (types.Count != 2 ||
-            //    !types.Contains(((int)BossType.BC).ToString()) ||
-            //    !types.Contains(((int)BossType.SC).ToString()))
-            //{
-            //    throw new Exception($"Equipe {teamId} deve ter chefes BC e SC");
-            //}
-        }
+        _bossRepository = bossRepository;
     }
 
+    public async Task<bool> ValidateAsync(int teamId)
+    {
+        var bosses = await _bossRepository.GetBossesByTeamAsync(teamId);
+
+        // Deve ter exatamente 2 chefes
+        if (bosses.Count != 2)
+            return false;
+
+        // Deve ter exatamente dois tipos diferentes
+        var types = bosses
+            .Select(b => b.Type)
+            .Distinct()
+            .ToList();
+
+        if (types.Count != 2)
+            return false;
+
+        // Deve conter BC (1) e SC (2)
+        if (!types.Contains((int)BossType.BC))
+            return false;
+
+        if (!types.Contains((int)BossType.SC))
+            return false;
+
+        return true;
+    }
 }

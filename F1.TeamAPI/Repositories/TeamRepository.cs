@@ -2,6 +2,7 @@
 using F1.Models.DTOs.TeamDTOs.TeamDTOs;
 using F1.Models.TeamModels;
 using F1.TeamAPI.Data;
+using F1.TeamAPI.DTOs.TeamCreation;
 using F1.TeamAPI.Repositories.Interfaces;
 using Microsoft.Data.SqlClient;
 
@@ -86,6 +87,139 @@ namespace F1.TeamAPI.Repositories
         }
 
 
+
+
+
+
+
+
+
+
+        public async Task CreateFullTeamAsync(CreateFullTeamRequestDTO dto)
+        {
+            using var transaction = _connection.BeginTransaction();
+
+            try
+            {
+                //TEAM
+                var teamId = await _connection.ExecuteScalarAsync<int>(
+                    @"INSERT INTO Team (Name)
+                      VALUES (@Name);
+                      SELECT CAST(SCOPE_IDENTITY() AS INT);",
+                    new { dto.Team.Name },
+                    transaction
+                );
+
+                //PILOTS
+                var pilotIds = new List<int>();
+
+                foreach (var pilot in dto.Pilots)
+                {
+                    var pilotId = await _connection.ExecuteScalarAsync<int>(
+                        @"INSERT INTO Pilot
+                        (Name, Surname, Weight, Age, IdentificationNumber, Status,
+                         Experience, Handicap, TeamId)
+                        VALUES
+                        (@Name, @Surname, @Weight, @Age, @IdentificationNumber, @Status,
+                         @Experience, @Handicap, @TeamId);
+                        SELECT CAST(SCOPE_IDENTITY() AS INT);",
+                        new
+                        {
+                            pilot.Name,
+                            pilot.Surname,
+                            pilot.Weight,
+                            pilot.Age,
+                            pilot.IdentificationNumber,
+                            pilot.Status,
+                            pilot.Experience,
+                            pilot.Handicap,
+                            TeamId = teamId
+                        },
+                        transaction
+                    );
+
+                    pilotIds.Add(pilotId);
+                }
+
+                //CARS 
+                var carIds = new List<int>();
+
+                for (int i = 0; i < dto.Cars.Count; i++)
+                {
+                    var car = dto.Cars[i];
+
+                    var carId = await _connection.ExecuteScalarAsync<int>(
+                        @"INSERT INTO Car
+                        (AerodynamicCoefficent, PowerCoefficient, Weight, Model, PilotId)
+                        VALUES
+                        (@AerodynamicCoefficent, @PowerCoefficient, @Weight, @Model, @PilotId);
+                        SELECT CAST(SCOPE_IDENTITY() AS INT);",
+                        new
+                        {
+                            car.AerodynamicCoefficent,
+                            car.PowerCoefficient,
+                            car.Weight,
+                            car.Model,
+                            PilotId = pilotIds[i]
+                        },
+                        transaction
+                    );
+
+                    carIds.Add(carId);
+                }
+
+                //ENGINEERS
+                foreach (var engineer in dto.Engineers)
+                {
+                    await _connection.ExecuteAsync(
+                        @"INSERT INTO Engineer
+                        (Name, Surname, Age, Experience, Type, Status, TeamId, CarId)
+                        VALUES
+                        (@Name, @Surname, @Age, @Experience, @Type, @Status, @TeamId, @CarId);",
+                        new
+                        {
+                            engineer.Name,
+                            engineer.Surname,
+                            engineer.Age,
+                            engineer.Experience,
+                            engineer.Type,
+                            engineer.Status,
+                            TeamId = teamId,
+                            engineer.CarId
+                        },
+                        transaction
+                    );
+                }
+
+                //BOSSES
+                foreach (var boss in dto.Bosses)
+                {
+                    await _connection.ExecuteAsync(
+                        @"INSERT INTO Boss
+                        (Name, Surname, Age, Type, Status, TeamId)
+                        VALUES
+                        (@Name, @Surname, @Age, @Type, @Status, @TeamId);",
+                        new
+                        {
+                            boss.Name,
+                            boss.Surname,
+                            boss.Age,
+                            boss.Type,
+                            boss.Status,
+                            TeamId = teamId
+                        },
+                        transaction
+                    );
+                }
+
+                transaction.Commit();
+            }
+            catch
+            {
+                transaction.Rollback();
+                throw;
+            }
+        }
     }
 }
 
