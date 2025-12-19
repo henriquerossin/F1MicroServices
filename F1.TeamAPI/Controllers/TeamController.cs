@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using F1.TeamAPI.Services.Interfaces;
+using Microsoft.AspNetCore.Mvc;
 
 namespace F1.TeamAPI.Controllers
 {
@@ -6,7 +7,47 @@ namespace F1.TeamAPI.Controllers
     [ApiController]
     public class TeamController : ControllerBase
     {
-    
+        private readonly ILogger<TeamController> _logger;
+        private readonly ITeamService _teamService;
 
+        public TeamController(ILogger<TeamController> logger, ITeamService teamService)
+        {
+            _logger = logger;
+            _teamService = teamService;
+        }
+
+        [HttpPost("UpdateCurrentInfo")]
+        public async Task<IActionResult> UpdatingCurrentInfoAsync()
+        {
+            try
+            {
+                var finalConsumer = await _teamService.ConsumingQueue();
+                var finalUpdatingInfos = await _teamService.UpdatingCurrentInfo(finalConsumer);
+                foreach (var h in finalUpdatingInfos)
+                {
+                    await _teamService.ProduceQueueAsync(h);
+                }
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while updating team infos.");
+                return StatusCode(500, "Internal server error");
+            }
+        }
+
+        [HttpPost("CreateQueueHistory")]
+        public async Task<IActionResult> CreateQueueHistoryAsync()
+        {
+            try
+            {
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while creating the history queue.");
+                return StatusCode(500, "Internal server error");
+            }
+        }
     }
 }

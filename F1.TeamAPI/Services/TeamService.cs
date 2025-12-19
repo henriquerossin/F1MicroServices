@@ -11,35 +11,39 @@ using F1.TeamAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Connections;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using System.Text;
 using System.Text.Json;
 
 namespace F1.TeamAPI.Services
 {
-    public class TeamService
+    public class TeamService : ITeamService
     {
         private readonly ITeamRepository _teamRepo;
         private readonly ICarRepository _carRepo;
         private readonly IPilotRepository _pilotRepo;
         private readonly TeamCreationValidator _validator;
         private readonly ILogger<TeamService> _logger;
+        private readonly HttpClient _clientRace;
 
         public TeamService(
             ITeamRepository teamRepo,
             ICarRepository carRepo,
             IPilotRepository pilotRepo,
             TeamCreationValidator validator,
-            ILogger<TeamService> logger)
+            ILogger<TeamService> logger,
+            HttpClient clientRace)
         {
             _teamRepo = teamRepo;
             _carRepo = carRepo;
             _pilotRepo = pilotRepo;
             _validator = validator;
             _logger = logger;
+            _clientRace = clientRace;
         }
 
 
        
-        }
+        
 
         public async Task<List<HistoryDTO>> ConsumingQueue()
         {
@@ -89,7 +93,7 @@ namespace F1.TeamAPI.Services
             }
         }
 
-        public async Task UpdatingCurrentInfo(List<HistoryDTO> listCurrentInfo)
+        public async Task<List<HistoryDTO>> UpdatingCurrentInfo(List<HistoryDTO> listCurrentInfo)
         {
             var newListCurrentInfo = new List<HistoryDTO>();
 
@@ -105,8 +109,47 @@ namespace F1.TeamAPI.Services
                 //atualizando informações do segundo piloto
                 await _pilotRepo.UpdatePilotHandicapAndPointsAsync(item.SecondPilot.PilotId, item.SecondPilot.PilotHandicap, item.SecondPilot.PilotPoints);
 
+                //atualizando informações do time
+                await _teamRepo.UpdateTeamPlacementAndPointsAsync(item.Team.TeamId, item.Team.TeamPlacement, item.Team.TeamPoints);
+
+                newListCurrentInfo.Add(item);
+            }
+            return newListCurrentInfo;
+        }
+
+        public async Task ProduceQueueAsync(HistoryDTO history)
+        {
+            try
+            {
+                var factory = new ConnectionFactory() { HostName = "localhost" };
+                using var connection = await factory.CreateConnectionAsync();
+                using var producerChannel = await connection.CreateChannelAsync();
+
+                await producerChannel.QueueDeclareAsync(queue: "History",
+                                                 durable: true,
+                                                 exclusive: false,
+                                                 autoDelete: false,
+                                                 arguments: null);
+
+                var message = JsonSerializer.Serialize(history);
+                var body = Encoding.UTF8.GetBytes(message);
+
+                await producerChannel.BasicPublishAsync(exchange: string.Empty,
+                                                 routingKey: "History",
+                                                 body: body);
+
+                await _clientRace.PostAsync(_clientRace.BaseAddress + "", null);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while updating the current event information.");
+                throw;
             }
         }
 
+        public Task<int> CreateCompletelyTeamManuallyAsync(TeamRequestDTO teamDto, List<PilotRequestDTO> pilotsDto, List<CarRequestDTO> carsDto, List<EngineerRequestDTO> engineersDto, List<BossRequestDTO> bossesDto)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
