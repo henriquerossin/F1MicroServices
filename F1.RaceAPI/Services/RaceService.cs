@@ -16,7 +16,7 @@ namespace F1.RaceAPI.Services
 
         private readonly IRaceRepository _raceRepository;
 
-        private readonly HttpClient _client;
+        private readonly HttpClient _clientCompetition;
 
         private int _currentEventType;
 
@@ -24,12 +24,13 @@ namespace F1.RaceAPI.Services
         {
             _logger = logger;
             _raceRepository = raceRepository;
-            _client = client;
+            _clientCompetition = client;
         }
 
         public List<HistoryDTO> historyList = new List<HistoryDTO>();
 
-        public async Task EventWorkerAsync(int idRound, int idEvent)
+
+        public async Task ConsumeAndSaveHistoryAsync(int idRound, int idEvent)
         {
             // Conecting to RabbitMQ
             var factory = new ConnectionFactory { HostName = "localhost" };
@@ -78,6 +79,13 @@ namespace F1.RaceAPI.Services
             if (currentCircuit is null || currentCircuit.Id != idRound)
             {
                 throw new InvalidOperationException($"Wrong circuit! The next circuit is {currentCircuit}");
+            }
+
+            var endCircuitValidation = await _raceRepository.GetLastCircuitAsync(currentCircuit.Id);
+
+            if (endCircuitValidation is true)
+            {
+                throw new InvalidOperationException($"Wrong circuit! this circuit is already done");
             }
 
             // Creating consumer
@@ -155,13 +163,6 @@ namespace F1.RaceAPI.Services
                 var attBody = Encoding.UTF8.GetBytes(
                     JsonSerializer.Serialize(mappedHistory)
                 );
-
-                // Publishing to AttHistory Queue
-                await channel.BasicPublishAsync(
-                    exchange: string.Empty,
-                    routingKey: "AttHistory",
-                    body: attBody
-                );
             };
 
             // Consuming the History Queue
@@ -172,9 +173,46 @@ namespace F1.RaceAPI.Services
             );
         }
 
+        public async Task PublishLastEventAsync()
+        {
+            // Getting last event from MongoDB
+            var lastEvent = await _raceRepository.GetLastEventAsync();
+
+            if (lastEvent is null)
+                throw new InvalidOperationException("No events found to publish");
+
+            // Conecting to RabbitMQ
+            var factory = new ConnectionFactory { HostName = "localhost" };
+
+            using var connection = await factory.CreateConnectionAsync();
+
+            using var channel = await connection.CreateChannelAsync();
+
+            // Declaring the AttHistory Queue
+            await channel.QueueDeclareAsync(
+                queue: "AttHistory",
+                durable: false,
+                exclusive: false,
+                autoDelete: false,
+                arguments: null
+            );
+
+            // Encoding Process
+            var body = Encoding.UTF8.GetBytes(
+                JsonSerializer.Serialize(lastEvent)
+            );
+
+            // Publishing to AttHistory Queue
+            await channel.BasicPublishAsync(
+                exchange: string.Empty,
+                routingKey: "AttHistory",
+                body: body
+            );
+        }
+
         public async Task<CircuitHistoryIdNameResponseDTO?> GetCircuitIdName()
         {
-            var response = await _client.GetAsync(_client.BaseAddress + "GetCircuitIdName");
+            var response = await _clientCompetition.GetAsync(_clientCompetition.BaseAddress + "GetCircuitIdName");
 
             var body = await response.Content.ReadAsStringAsync();
 

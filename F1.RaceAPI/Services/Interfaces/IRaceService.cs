@@ -4,7 +4,8 @@ namespace F1.RaceAPI.Services.Interfaces
 {
     public interface IRaceService
     {
-        Task EventWorkerAsync(int idRound, int idEvent);
+        Task ConsumeAndSaveHistoryAsync(int idRound, int idEvent);
+        Task PublishLastEventAsync();
         Task<CircuitHistoryIdNameResponseDTO?> GetCircuitIdName();
     }
 }

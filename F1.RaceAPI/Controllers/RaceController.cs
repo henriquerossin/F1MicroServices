@@ -21,13 +21,28 @@ namespace F1.RaceAPI.Controllers
         {
             try
             {
-                await _raceService.EventWorkerAsync(idCircuit, idEvent);
+                await _raceService.ConsumeAndSaveHistoryAsync(idCircuit, idEvent);
                 return Ok();
             }
-            catch (Exception e)
+            catch (InvalidOperationException e)
             {
                 _logger.LogError(e, "Error while trying to start event worker.");
-                return BadRequest();
+                return BadRequest(e.Message);
+            }
+        }
+
+        [HttpPost("/Event/Publish")]
+        public async Task<IActionResult> PublicLastEventAsync()
+        {
+            try
+            {
+                await _raceService.PublishLastEventAsync();
+                return Ok();
+            }
+            catch (InvalidOperationException e)
+            {
+                _logger.LogWarning(e.Message);
+                return BadRequest(e.Message);
             }
         }
     }

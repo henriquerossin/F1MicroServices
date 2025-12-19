@@ -39,14 +39,15 @@ namespace F1.RaceAPI.Repositories
             .FirstOrDefaultAsync();
         }
 
-        public async Task<int> GetLastCircuitAsync()
+        public async Task<bool> GetLastCircuitAsync(int idCircuit)
         {
-            var teste = await _collection
-            .Find(FilterDefinition<FinalHistoryResponseDTO>.Empty)
-            .SortByDescending(x => x.CreatedAt).Limit(1)
-            .FirstOrDefaultAsync();
+            bool validation;
 
-            return teste.EventType;
+            var filter = Builders<FinalHistoryResponseDTO>.Filter.And(Builders<FinalHistoryResponseDTO>
+                .Filter.Eq(x => x.CompetitionId.Id, idCircuit), Builders<FinalHistoryResponseDTO>
+                .Filter.Eq(x => x.EventType, 5));
+
+            return await _collection.Find(filter).AnyAsync();
         }
     }
 }
