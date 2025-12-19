@@ -150,7 +150,6 @@ namespace F1.EngineeringAPI.Services
                     },
                     SecondEngineerCa = info.SecondEngineerCa,
                     SecondEngineerCp = info.SecondEngineerCp,
-                    EventType = info.EventType
                 };
 
                 //colocando o novo obj na nova lista
@@ -178,7 +177,7 @@ namespace F1.EngineeringAPI.Services
             foreach (var info in finalHistory.HistoryList)
             {
                 decimal firstPD = 0m, secondPD = 0m, firstRandom, secondRandom;
-                if (info.EventType == 4 || info.EventType == 5)
+                if (finalHistory.EventType == 4 || finalHistory.EventType == 5)
                 {
                     Random random = new Random();
                     firstRandom = (decimal)(random.Next(1, 11));
@@ -260,7 +259,7 @@ namespace F1.EngineeringAPI.Services
                                 SecondCar = itemhist.SecondCar,
                                 SecondEngineerCa = itemhist.SecondEngineerCa,
                                 SecondEngineerCp = itemhist.SecondEngineerCp,
-                                EventType = itemhist.EventType
+
                             };
                             newListHistPilot.Add(newInfo);
                         }
@@ -297,7 +296,7 @@ namespace F1.EngineeringAPI.Services
                         SecondCar = item.SecondCar,
                         SecondEngineerCa = item.SecondEngineerCa,
                         SecondEngineerCp = item.SecondEngineerCp,
-                        EventType = item.EventType
+
                     };
 
                     newListHistTeam.Add(newInfo);
@@ -323,7 +322,7 @@ namespace F1.EngineeringAPI.Services
                     SecondCar = history.SecondCar,
                     SecondEngineerCa = history.SecondEngineerCa,
                     SecondEngineerCp = history.SecondEngineerCp,
-                    EventType = history.EventType
+
                 };
 
                 var factory = new ConnectionFactory() { HostName = "localhost" };

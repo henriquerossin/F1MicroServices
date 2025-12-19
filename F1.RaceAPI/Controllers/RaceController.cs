@@ -1,4 +1,5 @@
-﻿using F1.RaceAPI.Services.Interfaces;
+﻿using F1.Models.DTOs.HistoryDTOs;
+using F1.RaceAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace F1.RaceAPI.Controllers
@@ -16,7 +17,7 @@ namespace F1.RaceAPI.Controllers
             _raceService = raceService;
         }
 
-        [HttpPost("/Circuit/{idCircuit}/Event/{idEvent}")]
+        [HttpPost("Circuit/{idCircuit}/Event/{idEvent}")]
         public async Task<IActionResult> PostHistoryAsync(int idCircuit, int idEvent)
         {
             try
@@ -43,6 +44,25 @@ namespace F1.RaceAPI.Controllers
             {
                 _logger.LogWarning(e.Message);
                 return BadRequest(e.Message);
+            }
+        }
+
+        [HttpGet("Circuit/{idCircuit}/Event/{idEvent}")]
+        public async Task<ActionResult<FinalHistoryResponseDTO?>> GetOneFinalHistory(int idCircuit, int idEvent)
+        {
+            try
+            {
+                var history = await _raceService.GetOneFinalHistory(idCircuit, idEvent);
+
+                if (history is null)
+                    return NoContent();
+
+                return Ok(history);
+            }
+            catch (InvalidOperationException e)
+            {
+                _logger.LogError(e, "Error while trying to get History content.");
+                throw;
             }
         }
     }

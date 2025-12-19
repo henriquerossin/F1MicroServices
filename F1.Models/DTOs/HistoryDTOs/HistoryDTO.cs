@@ -31,6 +31,6 @@ namespace F1.Models.DTOs.HistoryDTOs
         public EngineerHistoryResponseDTO SecondEngineerCp { get; init; }
 
         //Type
-        public int EventType { get; init; }
+        //public int EventType { get; init; }
     }
 }

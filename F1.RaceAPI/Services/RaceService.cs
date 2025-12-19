@@ -27,8 +27,7 @@ namespace F1.RaceAPI.Services
             _clientCompetition = client;
         }
 
-        public List<HistoryDTO> historyList = new List<HistoryDTO>();
-
+        public List<HistoryDTO> historyList = [];
 
         public async Task ConsumeAndSaveHistoryAsync(int idRound, int idEvent)
         {
@@ -173,6 +172,19 @@ namespace F1.RaceAPI.Services
             );
         }
 
+        public async Task<FinalHistoryResponseDTO?> GetOneFinalHistory(int idCircuit, int idEvent)
+        {
+            try
+            {
+                return await _raceRepository.GetOneFinalHistory(idCircuit, idEvent);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Error while trying to get History document.");
+                throw;
+            }
+        }
+
         public async Task PublishLastEventAsync()
         {
             // Getting last event from MongoDB
@@ -212,13 +224,21 @@ namespace F1.RaceAPI.Services
 
         public async Task<CircuitHistoryIdNameResponseDTO?> GetCircuitIdName()
         {
-            var response = await _clientCompetition.GetAsync(_clientCompetition.BaseAddress + "GetCircuitIdName");
+            try
+            {
+                //var response = await _clientCompetition.GetAsync(_clientCompetition.BaseAddress + "GetCircuitIdName");
+                var response = await _clientCompetition.GetAsync("GetCircuitIdName");
 
-            var body = await response.Content.ReadAsStringAsync();
+                var body = await response.Content.ReadAsStringAsync();
 
-            var finalBody = JsonSerializer.Deserialize<CircuitHistoryIdNameResponseDTO>(body);
+                var finalBody = JsonSerializer.Deserialize<CircuitHistoryIdNameResponseDTO>(body);
 
-            return finalBody;
+                return finalBody;
+            }
+            catch (Exception e)
+            {
+                throw new InvalidOperationException(e.Message);
+            }
         }
     }
 }
