@@ -14,15 +14,14 @@ namespace F1.CompetitionAPI.Services
     {
         private readonly ILogger<CompetitionService> _logger;
         private readonly ICompetitionRepository _repository;
-        private readonly HttpClient _clientRace;
-        private readonly HttpClient _clientTeam;
+        private readonly IHttpClientFactory _httpClientFactory;
 
-        public CompetitionService(ILogger<CompetitionService> logger, ICompetitionRepository repository , HttpClient clientRace, HttpClient clientTeam)
+
+        public CompetitionService(ILogger<CompetitionService> logger, ICompetitionRepository repository , IHttpClientFactory httpClientFactory)
         {
             _logger = logger;
             _repository = repository;
-            _clientRace = clientRace;
-            _clientTeam = clientTeam;
+            _httpClientFactory = httpClientFactory;
         }
 
         public async Task ActivateCircuitAsync(int id)
@@ -358,7 +357,8 @@ namespace F1.CompetitionAPI.Services
         {
             try
             {
-                await _clientRace.PostAsync(_clientRace.BaseAddress + "Circuit/1/Event/1", null);
+                var client = _httpClientFactory.CreateClient("RaceClient");
+                await client.PostAsync("Circuit/1/Event/1", null);
             }
             catch (SqlException ex)
             {
@@ -376,13 +376,11 @@ namespace F1.CompetitionAPI.Services
         {
             try
             {
-                var response = await _clientRace.GetAsync(_clientTeam.BaseAddress + "validateTeam ");
+                var client = _httpClientFactory.CreateClient("TeamClient");
 
-                var body = await response.Content.ReadAsStringAsync();
+                var response = await client.GetAsync("validateTeam");
 
-                var finalBody = JsonSerializer.Deserialize<bool>(body);
-
-                return finalBody;
+                return await response.Content.ReadFromJsonAsync<bool>();
             }
             catch (SqlException ex)
             {
