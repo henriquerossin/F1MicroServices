@@ -19,14 +19,42 @@ namespace F1.TeamAPI.Repositories
         {
             try
             {
-                var sql = @"
+                const string sql = @"
                     INSERT INTO Engineer
-                    (Name, Surname, Age, Experience, Type, Status, TeamId, CarId, IsActive)
+                    (
+                        Name,
+                        Surname,
+                        Age,
+                        Experience,
+                        Type,
+                        Status,
+                        TeamId,
+                        CarId
+                    )
                     VALUES
-                    (@Name, @Surname, @Age, @Experience, @Type, @Status, @TeamId, @CarId, 1);
+                    (
+                        @Name,
+                        @Surname,
+                        @Age,
+                        @Experience,
+                        @Type,
+                        @Status,
+                        @TeamId,
+                        @CarId
+                    );
                 ";
 
-                await _connection.ExecuteAsync(sql, dto);
+                await _connection.ExecuteAsync(sql, new
+                {
+                    dto.Name,
+                    dto.Surname,
+                    dto.Age,
+                    dto.Experience,
+                    dto.Type,
+                    dto.Status,
+                    dto.TeamId,
+                    dto.CarId
+                });
             }
             catch (Exception ex)
             {
@@ -38,7 +66,11 @@ namespace F1.TeamAPI.Repositories
         {
             try
             {
-                var sql = @"UPDATE Engineer SET IsActive = 0 WHERE Id = @Id;";
+                const string sql = @"
+                    UPDATE Engineer
+                    SET IsActive = 0
+                    WHERE Id = @Id;
+                ";
 
                 await _connection.ExecuteAsync(sql, new { Id = id });
             }
@@ -52,7 +84,7 @@ namespace F1.TeamAPI.Repositories
         {
             try
             {
-                var sql = @"
+                const string sql = @"
                     SELECT
                         Id,
                         Name,
@@ -79,7 +111,7 @@ namespace F1.TeamAPI.Repositories
         {
             try
             {
-                var sql = @"
+                const string sql = @"
                     SELECT
                         e.Id,
                         e.Name,
@@ -92,9 +124,10 @@ namespace F1.TeamAPI.Repositories
                         e.CarId
                     FROM Engineer e
                     INNER JOIN Team t ON t.Id = e.TeamId
-                    WHERE e.TeamId = @TeamId
-                      AND e.IsActive = 1
-                      AND t.IsActive = 1;
+                    WHERE
+                        e.TeamId = @TeamId
+                        AND e.IsActive = 1
+                        AND t.IsActive = 1;
                 ";
 
                 return (await _connection.QueryAsync<EngineerResponseDTO>(
@@ -112,7 +145,7 @@ namespace F1.TeamAPI.Repositories
         {
             try
             {
-                var sql = @"
+                const string sql = @"
                     UPDATE Engineer
                     SET
                         Name = @Name,
@@ -123,8 +156,9 @@ namespace F1.TeamAPI.Repositories
                         Status = @Status,
                         TeamId = @TeamId,
                         CarId = @CarId
-                    WHERE Id = @Id
-                      AND IsActive = 1;
+                    WHERE
+                        Id = @Id
+                        AND IsActive = 1;
                 ";
 
                 await _connection.ExecuteAsync(sql, new
@@ -137,7 +171,7 @@ namespace F1.TeamAPI.Repositories
                     dto.Type,
                     dto.Status,
                     dto.TeamId,
-                    dto.CarId,
+                    dto.CarId
                 });
             }
             catch (Exception ex)

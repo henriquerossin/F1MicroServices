@@ -34,21 +34,22 @@ namespace F1.TeamAPI.Repositories
 
         }
 
-        public async Task CreateTeamAsync(Team team)
+        public async Task CreateTeamAsync(TeamRequestDTO dto)
         {
             try
             {
-                var sql = @"INSERT INTO Team (Name, Points, Placement, IsActive)
-                          VALUES (@Name, @Points, @Placement, @IsActive)";
 
-                var id = await _connection.ExecuteScalarAsync<int>(sql, team);
+                const string sql = @"INSERT INTO Team (Name)
+                                 VALUES (@Name);";
 
-                typeof(Team).GetProperty(nameof(Team.Id))!.SetValue(team, id);
-
+                await _connection.ExecuteAsync(sql, new
+                {
+                    dto.Name
+                });
             }
             catch (Exception ex)
             {
-                throw new Exception("Erro ao registrar time: " + ex.Message);
+                throw new Exception("Erro ao criar equipe: " + ex.Message);
             }
         }
 
