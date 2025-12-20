@@ -9,7 +9,6 @@
         public int Age { get; private set; }
         public int IdentificationNumber { get; private set; }
         public bool Status { get; private set; }
-        public decimal Experience { get; private set; }
         public decimal Handicap { get; private set; }
         public int TeamId { get; private set; }
         public int Points { get; private set; }
@@ -33,7 +32,6 @@
             Age = age;
             IdentificationNumber = identificationNumber;
             Status = status;
-            Experience = experience;
             Handicap = handicap;
             TeamId = teamId;
             Points = points;

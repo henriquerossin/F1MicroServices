@@ -219,5 +219,47 @@ namespace F1.CompetitionAPI.Controllers
                 throw;
             }
         }
+
+        [HttpPatch("ConcludeCircuit")]
+        public async Task<IActionResult> ConcludeCircuitAsync()
+        {
+            try
+            {
+                _logger.LogInformation("Concluding circuit...");
+                await _service.ConcludeCircuitAsync();
+                return Ok();
+            }
+            catch (SqlException ex)
+            {
+                _logger.LogError(ex, " Error!");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, " Error!");
+                throw;
+            }
+        }
+
+        [HttpGet("GetReady")]
+        public async Task<ActionResult<CircuitResponseDTO>> GetCircuitReadyAsync()
+        {
+            try
+            {
+                _logger.LogInformation("Getting circuit ready");
+                var circuit = await _service.GetCircuitReadyAsync();
+                return Ok(circuit);
+            }
+            catch (SqlException ex)
+            {
+                _logger.LogError(ex, " Error!");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, " Error!");
+                throw;
+            }
+        }
     }
 }

@@ -2,22 +2,24 @@
 
 namespace F1.TeamAPI.Services.Validation
 {
-    public class TeamCountValidator
+    public class TeamCountValidation
     {
         private readonly ITeamRepository _teamRepository;
 
-        public TeamCountValidator(ITeamRepository teamRepository)
+        public TeamCountValidation(ITeamRepository teamRepository)
         {
             _teamRepository = teamRepository;
         }
 
-        public async Task ValidateAsync()
+        public async Task<bool> ValidateAsync()
         {
             var teams = await _teamRepository.GetAllTeamsAsync();
 
+            // Deve haver exatamente 11 equipes ativas
             if (teams.Count != 11)
-                throw new Exception("A corrida exige exatamente 11 equipes ativas");
+                return false;
+
+            return true;
         }
     }
-
 }
