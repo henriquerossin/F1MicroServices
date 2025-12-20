@@ -18,5 +18,6 @@ namespace F1.TeamAPI.Services.Interfaces
 
         Task<bool> ValidateTeamAsync(); //validar pra api2
         Task CreateFullTeamAsync(CreateFullTeamRequestDTO dto); //criação completa da equipe
+        Task CreateFullTeamRandomAsync(CreateFullTeamRequestDTO dto); //criação aleatoria da equipe
     }
 }

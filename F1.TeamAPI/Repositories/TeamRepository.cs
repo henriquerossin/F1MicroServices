@@ -254,6 +254,9 @@ namespace F1.TeamAPI.Repositories
                     var pilotSurname = PilotGenerator.PilotSurname();
                     var pilotWeight = PilotGenerator.PilotWeight();
                     var pilotAge = PilotGenerator.PilotAge();
+                    var pilotIdentificationNumber = PilotGenerator.PilotIdentificationNumber();
+                    var pilotExperience = PilotGenerator.PilotExperience();
+                    var pilotHandicap = PilotGenerator.PilotHandicap();
 
                     var pilotId = await _connection.ExecuteScalarAsync<int>(
                         @"INSERT INTO Pilot
@@ -267,11 +270,11 @@ namespace F1.TeamAPI.Repositories
                         {
                             pilotName,
                             pilotSurname,
-                            pilot.Weight,
-                            pilot.Age,
-                            pilot.IdentificationNumber,
-                            pilot.Experience,
-                            pilot.Handicap,
+                            pilotWeight,
+                            pilotAge,
+                            pilotIdentificationNumber,
+                            pilotExperience,
+                            pilotHandicap,
                             TeamId = teamId
                         },
                         transaction
@@ -285,6 +288,11 @@ namespace F1.TeamAPI.Repositories
 
                 for (int i = 0; i < dto.Cars.Count; i++)
                 {
+                    var carAerodynamicCoefficent = CarGenerator.CarAerodinamicCoefficent();
+                    var carPowerCoefficient = CarGenerator.CarPowerCoefficient();
+                    var carWeight = CarGenerator.CarWeight();
+                    var carModel = CarGenerator.CarModel();
+
                     var car = dto.Cars[i];
 
                     var carId = await _connection.ExecuteScalarAsync<int>(
@@ -295,21 +303,27 @@ namespace F1.TeamAPI.Repositories
                         SELECT CAST(SCOPE_IDENTITY() AS INT);",
                         new
                         {
-                            car.AerodynamicCoefficent,
-                            car.PowerCoefficient,
-                            car.Weight,
-                            car.Model,
+                            carAerodynamicCoefficent,
+                            carPowerCoefficient,
+                            carWeight,
+                            carModel,
                             PilotId = pilotIds[i]
                         },
                         transaction
                     );
 
                     carIds.Add(carId);
-                }
 
-                //ENGINEERS
-                foreach (var engineer in dto.Engineers)
-                {
+
+                    //colocando engenheiro dentro do loop de carro pra ter o carId
+                    //fazendo duas vezes engenheiro pela geração ser separada
+                    //mesma coisa com boss
+                    var CAEngineerName = CAEngineerGenerator.CAEngineerName();
+                    var CAEngineerSurname = CAEngineerGenerator.CAEngineerSurname();
+                    var CAEngineerAge = CAEngineerGenerator.CAEngineerAge();
+                    var CAEngineerExperience = CAEngineerGenerator.CAEngineerExperience();
+                    var CAEngineerType = CAEngineerGenerator.CAEngineerType();
+
                     await _connection.ExecuteAsync(
                         @"INSERT INTO Engineer
                         (Name, Surname, Age, Experience, Type, TeamId, CarId)
@@ -317,37 +331,87 @@ namespace F1.TeamAPI.Repositories
                         (@Name, @Surname, @Age, @Experience, @Type, @TeamId, @CarId);",
                         new
                         {
-                            engineer.Name,
-                            engineer.Surname,
-                            engineer.Age,
-                            engineer.Experience,
-                            engineer.Type,
+                            CAEngineerName,
+                            CAEngineerSurname,
+                            CAEngineerAge,
+                            CAEngineerExperience,
+                            CAEngineerType,
                             TeamId = teamId,
-                            engineer.CarId
+                            carId,
+
                         },
                         transaction
                     );
-                }
 
-                //BOSSES
-                foreach (var boss in dto.Bosses)
-                {
+
+                    var CPEngineerName = CPEngineerGenerator.CPEngineerName();
+                    var CPEngineerSurname = CPEngineerGenerator.CPEngineerSurname();
+                    var CPEngineerAge = CPEngineerGenerator.CPEngineerAge();
+                    var CPEngineerExperience = CPEngineerGenerator.CPEngineerExperience();
+                    var CPEngineerType = CPEngineerGenerator.CPEngineerType();
+
+                    await _connection.ExecuteAsync(
+                        @"INSERT INTO Engineer
+                        (Name, Surname, Age, Experience, Type, TeamId, CarId)
+                        VALUES
+                        (@Name, @Surname, @Age, @Experience, @Type, @TeamId, @CarId);",
+                        new
+                        {
+                            CPEngineerName,
+                            CPEngineerSurname,
+                            CPEngineerAge,
+                            CPEngineerExperience,
+                            CPEngineerType,
+                            TeamId = teamId,
+                            carId,
+
+                        },
+                        transaction
+                    );
+
+                    var bigBossName = BigBossGerenator.BigBossName();
+                    var bigBossSurname = BigBossGerenator.BigBossSurname();
+                    var bigBossAge = BigBossGerenator.BigBossAge();
+                    var bigBossType = BigBossGerenator.BigBossType();
+
                     await _connection.ExecuteAsync(
                         @"INSERT INTO Boss
                         (Name, Surname, Age, Type, TeamId)
                         VALUES
                         (@Name, @Surname, @Age, @Type, @TeamId);",
-                        new
-                        {
-                            boss.Name,
-                            boss.Surname,
-                            boss.Age,
-                            boss.Type,
-                            TeamId = teamId
-                        },
-                        transaction
-                    );
+                            new
+                            {
+                                bigBossName,
+                                bigBossSurname,
+                                bigBossAge,
+                                bigBossType,
+                                TeamId = teamId
+                            },
+                            transaction);
+
+                    var smallBossName = BigBossGerenator.BigBossName();
+                    var smallBossSurname = BigBossGerenator.BigBossSurname();
+                    var smallBossAge = BigBossGerenator.BigBossAge();
+                    var smallBossType = BigBossGerenator.BigBossType();
+
+                    await _connection.ExecuteAsync(
+                        @"INSERT INTO Boss
+                        (Name, Surname, Age, Type, TeamId)
+                        VALUES
+                        (@Name, @Surname, @Age, @Type, @TeamId);",
+                            new
+                            {
+                                smallBossName,
+                                smallBossSurname,
+                                smallBossAge,
+                                smallBossType,
+                                TeamId = teamId
+                            },
+                            transaction
+                            );
                 }
+
+
 
                 transaction.Commit();
             }

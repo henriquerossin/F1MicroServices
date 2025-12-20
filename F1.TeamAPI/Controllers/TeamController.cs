@@ -1,6 +1,5 @@
 ﻿using F1.TeamAPI.Services.Interfaces;
 using F1.TeamAPI.DTOs.TeamCreation;
-using F1.TeamAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace F1.TeamAPI.Controllers
@@ -27,8 +26,7 @@ namespace F1.TeamAPI.Controllers
 
 
 
-
-        [HttpPost("createFullManually")]
+        [HttpPost("createFullTeamManually")]
         public async Task<IActionResult> CreateFullTeam(
         [FromBody] CreateFullTeamRequestDTO dto)
         {
@@ -36,6 +34,14 @@ namespace F1.TeamAPI.Controllers
             return Ok();
         }
 
+
+        [HttpPost("createFullTeamRandom")]
+        public async Task<IActionResult> CreateFullTeamRandom(
+        [FromBody] CreateFullTeamRequestDTO dto)
+        {
+            await _teamService.CreateFullTeamRandomAsync(dto);
+            return Ok();
+        }
 
         [HttpPost("UpdateCurrentInfo")]
         public async Task<IActionResult> UpdatingCurrentInfoAsync()

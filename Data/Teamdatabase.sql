@@ -61,7 +61,6 @@ CREATE TABLE Engineer (
     Age INT NOT NULL,
     Experience DECIMAL(5,2) NOT NULL,
     Type TINYINT NOT NULL,
-    Status VARCHAR(255) NOT NULL,
     TeamId INT NOT NULL,
     CarId INT NOT NULL,
     IsActive TINYINT NOT NULL DEFAULT 1,
@@ -79,7 +78,6 @@ CREATE TABLE Boss (
     Surname VARCHAR(255) NOT NULL,
     Age INT NOT NULL,
     Type VARCHAR(255) NOT NULL,
-    Status TINYINT NOT NULL,
     TeamId INT NOT NULL,
     IsActive TINYINT NOT NULL DEFAULT 1,
 
