@@ -4,8 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace F1.TeamAPI.Controllers
 {
+    [Route("api/[controller]")]
     [ApiController]
-    [Route("team")]
     public class TeamController : ControllerBase
     {
         private readonly ILogger<TeamController> _logger;

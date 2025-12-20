@@ -17,7 +17,7 @@ namespace F1.EngineeringAPI.Controllers
             _engineeringService = engineeringService;
         }
 
-        [HttpPut]
+        [HttpPut("Engineering")]
         public async Task<IActionResult> UpdateInfosForEvent()
         {
             try

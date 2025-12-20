@@ -122,6 +122,8 @@ namespace F1.RaceAPI.Services
 
                 FinalHistoryResponseDTO finalEvent = null;
 
+                var count = 0;
+
                 lock (historyList)
                 {
                     historyList.Add(mappedHistory);
@@ -148,9 +150,16 @@ namespace F1.RaceAPI.Services
 
                         if (_currentEventType > 5)
                         {
+                            count = _currentEventType;
                             _currentEventType = 1;
                         }
                     }
+                }
+
+                if(count is 5)
+                {
+                    await ConcludeCircuit();
+                    count = 0;
                 }
 
                 if (finalEvent is not null)
@@ -246,14 +255,16 @@ namespace F1.RaceAPI.Services
 
         public async Task ConcludeCircuit()
         {
-            throw new NotImplementedException(); 
+            var client = _httpClientFactory.CreateClient("CompetitionClient");
+
+            await client.PatchAsync("ConcludeCircuit", null);
         }
 
         public async Task UpdateInfosForEvent()
         {
             try
             {
-                var client = _httpClientFactory.CreateClient("UpdateInfosForEvent");
+                var client = _httpClientFactory.CreateClient("EngineeringClient");
 
                 var response = await client.PutAsync("Engineering", null);
             }
