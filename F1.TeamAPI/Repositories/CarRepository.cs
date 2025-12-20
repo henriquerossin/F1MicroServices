@@ -193,7 +193,7 @@ namespace F1.TeamAPI.Repositories
         public async Task<List<CarHistoryResponseDTO>> GetAllCarsHistoryAsync()
         {
             var sql =
-                @"SELECT Id, Model, AerodynamicCoefficent, PowerCoefficient 
+                @"SELECT Id as CarId, Model as CarModel, AerodynamicCoefficent as CarAerodynamicCoefficent, PowerCoefficient as CarPowerCoefficient, PilotId 
                     FROM Car";
 
             var cars = await _connection.QueryAsync<CarHistoryResponseDTO>(sql);
