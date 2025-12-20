@@ -7,10 +7,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
-builder.Services.AddHttpClient("TeamAPI", client =>
-{
-    client.BaseAddress = new Uri("https://localhost:8001/api");
-});
+builder.Services.AddHttpClient("TeamAPI", client => { client.BaseAddress = new Uri("https://localhost:8001/api/Team/"); });
+
 
 builder.Services.AddSingleton<IEngineeringService, EngineeringService>();
 

@@ -13,65 +13,66 @@ namespace F1.EngineeringAPI.Services
     public class EngineeringService : IEngineeringService
     {
         private readonly ILogger<EngineeringService> _logger;
-        private readonly HttpClient _clientTeam;
-
-        public EngineeringService(ILogger<EngineeringService> logger, HttpClient clientTeam)
+        private readonly IHttpClientFactory _httpClientFactory;
+        public EngineeringService(ILogger<EngineeringService> logger, IHttpClientFactory httpClientFactory)
         {
             _logger = logger;
-            _clientTeam = clientTeam;
+            _httpClientFactory = httpClientFactory;
         }
 
 
-        public async Task<FinalHistoryResponseDTO> ConsumingQueueAsync()
+        public async Task<FinalHistoryResponseDTO> ConsumingQueueAsync(CancellationToken cancellationToken = default)
         {
             var listHistories = new FinalHistoryResponseDTO().HistoryList;
+            var factory = new ConnectionFactory { HostName = "localhost" };
 
-            try
+            using var connection = await factory.CreateConnectionAsync();
+            using var consumerChannel = await connection.CreateChannelAsync();
+
+            await consumerChannel.QueueDeclareAsync(queue: "AttHistory",
+                                                   durable: true,
+                                                   exclusive: false,
+                                                   autoDelete: false,
+                                                   arguments: null);
+
+            var tcs = new TaskCompletionSource<FinalHistoryResponseDTO>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var consumer = new AsyncEventingBasicConsumer(consumerChannel);
+
+            consumer.ReceivedAsync += async (model, ea) =>
             {
-                var factory = new ConnectionFactory { HostName = "localhost" };
-                using var connection = await factory.CreateConnectionAsync();
-                using var consumerChannel = await connection.CreateChannelAsync();
-
-                await consumerChannel.QueueDeclareAsync(queue: "AttHistory",
-                                                 durable: true,
-                                                 exclusive: false,
-                                                 autoDelete: false,
-                                                 arguments: null);
-
-                var consumer = new AsyncEventingBasicConsumer(consumerChannel);
-
-                FinalHistoryResponseDTO info = null;
-
-                consumer.ReceivedAsync += async (model, ea) =>
+                try
                 {
                     var body = ea.Body.ToArray();
                     var message = Encoding.UTF8.GetString(body);
-                    info = JsonSerializer.Deserialize<FinalHistoryResponseDTO>(message);
+                    var info = JsonSerializer.Deserialize<FinalHistoryResponseDTO>(message);
 
                     if (info != null)
                     {
                         lock (listHistories)
                         {
                             foreach (var history in info.HistoryList)
-                            {
                                 listHistories.Add(history);
-                            }
                         }
                     }
 
                     await consumerChannel.BasicAckAsync(ea.DeliveryTag, false);
-                };
+                    tcs.TrySetResult(info);
+                }
+                catch (Exception ex)
+                {
+                    tcs.TrySetException(ex);
+                }
+            };
 
-                await consumerChannel.BasicConsumeAsync(queue: "AttHistory",
-                                                 autoAck: false,
-                                                 consumer: consumer);
+            var consumerTag = await consumerChannel.BasicConsumeAsync(queue: "AttHistory",
+                                                                   autoAck: false,
+                                                                   consumer: consumer);
 
-                return info;
-            }
-            catch (Exception ex)
+            using (cancellationToken.Register(() => tcs.TrySetCanceled()))
             {
-                _logger.LogError(ex, "An error occurred while updating engineering infos for event.");
-                throw;
+                var result = await tcs.Task; // wait here while channel remains open
+                await consumerChannel.BasicCancelAsync(consumerTag);
+                return result;
             }
         }
 
@@ -342,12 +343,19 @@ namespace F1.EngineeringAPI.Services
                                                  routingKey: "UpdateHistory",
                                                  body: body);
 
-                await _clientTeam.PostAsync(_clientTeam.BaseAddress + "UpdateCurrentInfo", null);
+                await CallingConsumer();
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "An error occurred while producing engineering infos for event.");
             }
+        }
+
+        public async Task CallingConsumer()
+        {
+            var client = _httpClientFactory.CreateClient("TeamAPI");
+
+            await client.PostAsync("UpdateCurrentInfo", null);
         }
     }
 }
