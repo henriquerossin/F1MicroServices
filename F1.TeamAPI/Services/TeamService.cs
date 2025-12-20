@@ -7,7 +7,6 @@ using F1.TeamAPI.Services.Interfaces;
 using F1.TeamAPI.Services.Validation;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
-using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 
@@ -88,7 +87,6 @@ namespace F1.TeamAPI.Services
                 if (!await _teamBossesValidator.ValidateAsync(team.Id))
                     return false;
             }
-
             return true;
         }
 
