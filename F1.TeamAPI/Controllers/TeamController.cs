@@ -44,7 +44,7 @@ namespace F1.TeamAPI.Controllers
         [HttpPost("UpdateCurrentInfo")]
         public async Task<IActionResult> UpdatingCurrentInfoAsync()
         {
-            try
+            try 
             {
                 var finalConsumer = await _teamService.ConsumingQueue();
                 var finalUpdatingInfos = await _teamService.UpdatingCurrentInfo(finalConsumer);

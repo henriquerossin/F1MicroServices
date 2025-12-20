@@ -8,5 +8,6 @@ namespace F1.EngineeringAPI.Services.Interfaces
         Task<FinalHistoryResponseDTO> UpdatingInfosForEventsAsync(FinalHistoryResponseDTO finalHistory);
         Task<List<HistoryDTO>> UpdatePlacementAsync(FinalHistoryResponseDTO finalHistory);
         Task ProduceQueueAsync(HistoryDTO history);
+        Task NotifyTeamApiToUpdate();
     }
 }

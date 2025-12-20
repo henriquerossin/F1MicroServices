@@ -30,6 +30,8 @@ namespace F1.EngineeringAPI.Controllers
                 {
                     await _engineeringService.ProduceQueueAsync(h);
                 }
+
+                await _engineeringService.NotifyTeamApiToUpdate();
                 return Ok();
             }
             catch (Exception ex)

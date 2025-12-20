@@ -343,12 +343,17 @@ namespace F1.EngineeringAPI.Services
                                                  routingKey: "UpdateHistory",
                                                  body: body);
 
-                await CallingConsumer();
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "An error occurred while producing engineering infos for event.");
             }
+        }
+
+        public async Task NotifyTeamApiToUpdate()
+        {
+            var client = _httpClientFactory.CreateClient("TeamAPI");
+            await client.PostAsync("UpdateCurrentInfo", null);
         }
 
         public async Task CallingConsumer()

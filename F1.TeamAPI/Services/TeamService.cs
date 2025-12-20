@@ -238,13 +238,19 @@ namespace F1.TeamAPI.Services
                 //await _clientRace.PostAsync("Circuit/1/Event/1", null);
 
                 var client = _httpClientFactory.CreateClient("RaceAPI");
-                await client.PostAsync("Circuit/1/Event/1", null);
+                //await client.PostAsync("Circuit/1/Event/1", null);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erro ao publicar na fila History");
                 throw;
             }
+        }
+
+        public async Task NotifyRaceApi()
+        {
+            var client = _httpClientFactory.CreateClient("RaceAPI");
+            await client.PostAsync("Circuit/1/Event/1", null);
         }
 
         //public async Task<List<HistoryDTO>> GetAllHistoryAsync()
@@ -355,6 +361,5 @@ namespace F1.TeamAPI.Services
 
             return histories;
         }
-
     }
 }
