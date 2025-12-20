@@ -244,6 +244,11 @@ namespace F1.RaceAPI.Services
             }
         }
 
+        public async Task ConcludeCircuit()
+        {
+            throw new NotImplementedException(); 
+        }
+
         public async Task UpdateInfosForEvent()
         {
             try
