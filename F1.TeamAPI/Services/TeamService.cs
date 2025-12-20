@@ -31,6 +31,7 @@ namespace F1.TeamAPI.Services
             ITeamRepository teamRepo,
             ICarRepository carRepo,
             IPilotRepository pilotRepo,
+            IEngineerRepository engRepo,
             TeamCreationValidator validator,
             ILogger<TeamService> logger,
             HttpClient clientRace,
@@ -43,6 +44,7 @@ namespace F1.TeamAPI.Services
             _teamRepo = teamRepo;
             _carRepo = carRepo;
             _pilotRepo = pilotRepo;
+            _engRepo = engRepo;
             _validator = validator;
             _logger = logger;
             _clientRace = clientRace;
@@ -160,32 +162,81 @@ namespace F1.TeamAPI.Services
             return newListCurrentInfo;
         }
 
+        //public async Task ProduceQueueAsync(HistoryDTO history)
+        //{
+        //    try
+        //    {
+        //        var factory = new ConnectionFactory() { HostName = "localhost" };
+        //        using var connection = await factory.CreateConnectionAsync();
+        //        using var producerChannel = await connection.CreateChannelAsync();
+
+        //        await producerChannel.QueueDeclareAsync(queue: "History",
+        //                                         durable: false,
+        //                                         exclusive: false,
+        //                                         autoDelete: false,
+        //                                         arguments: null);
+
+        //        var message = JsonSerializer.Serialize(history);
+        //        var body = Encoding.UTF8.GetBytes(message);
+
+        //        await producerChannel.BasicPublishAsync(exchange: string.Empty,
+        //                                         routingKey: "History",
+        //                                         body: body);
+
+        //        await _clientRace.PostAsync(_clientRace.BaseAddress + "Circuit/1/Event/1", null);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, "An error occurred while updating the current event information.");
+        //        throw;
+        //    }
+        //}
+
         public async Task ProduceQueueAsync(HistoryDTO history)
         {
             try
             {
-                var factory = new ConnectionFactory() { HostName = "localhost" };
-                using var connection = await factory.CreateConnectionAsync();
-                using var producerChannel = await connection.CreateChannelAsync();
+                var factory = new ConnectionFactory
+                {
+                    HostName = "localhost",
+                    UserName = "guest",
+                    Password = "guest",
+                    VirtualHost = "/"
+                };
 
-                await producerChannel.QueueDeclareAsync(queue: "History",
-                                                 durable: true,
-                                                 exclusive: false,
-                                                 autoDelete: false,
-                                                 arguments: null);
+                using var connection = await factory.CreateConnectionAsync();
+                using var channel = await connection.CreateChannelAsync();
+
+                await channel.QueueDeclareAsync(
+                    queue: "History",
+                    durable: true,
+                    exclusive: false,
+                    autoDelete: false,
+                    arguments: null);
 
                 var message = JsonSerializer.Serialize(history);
                 var body = Encoding.UTF8.GetBytes(message);
 
-                await producerChannel.BasicPublishAsync(exchange: string.Empty,
-                                                 routingKey: "History",
-                                                 body: body);
+                var props = new BasicProperties
+                {
+                    Persistent = true
+                };
 
-                await _clientRace.PostAsync(_clientRace.BaseAddress + "", null);
+                await channel.BasicPublishAsync(
+                    exchange: "",
+                    routingKey: "History",
+                    mandatory: false,
+                    basicProperties: props,
+                    body: body);
+
+                await channel.CloseAsync();
+                await connection.CloseAsync();
+
+                _logger.LogInformation("Mensagem enviada para a fila History");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "An error occurred while updating the current event information.");
+                _logger.LogError(ex, "Erro ao publicar na fila History");
                 throw;
             }
         }
@@ -230,7 +281,7 @@ namespace F1.TeamAPI.Services
         public async Task<List<HistoryDTO>> GetAllHistoryAsync()
         {
             var teams = await _teamRepo.GetAllTeamsHistoryAsync();
-            var pilots = await _pilotRepo.GetAllPilotsHistoryAsync();
+            var pilots = await _pilotRepo.GetAllPilotsHistoryAsync();   
             var cars = await _carRepo.GetAllCarsHistoryAsync();
             var engineers = await _engRepo.GetAllEngineersHistoryAsync();
 

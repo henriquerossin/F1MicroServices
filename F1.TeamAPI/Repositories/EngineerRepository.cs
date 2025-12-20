@@ -118,7 +118,7 @@ namespace F1.TeamAPI.Repositories
                         e.Age,
                         e.Experience,
                         e.Type,
-                        e.Status,
+                        e.IsActive,
                         e.TeamId,
                         e.CarId
                     FROM Engineer e

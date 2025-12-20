@@ -338,7 +338,7 @@ namespace F1.CompetitionAPI.Services
                         {
                             //var circuits = await _repository.GetAllCircuitsActivesOrdenedAsync();
                             await _repository.StartTemp();
-                            //CHAMAR END POINT DO PEDRO QUE ESTA SENDO CRIADO QUE EMPURRA NA FILA DO HISTORY
+                            await Socorro();
 
                         }
                     }
@@ -354,6 +354,12 @@ namespace F1.CompetitionAPI.Services
                 _logger.LogError(ex, " Error!");
                 throw;
             }
+        }
+
+        public async Task Socorro()
+        {
+            var client = _httpClientFactory.CreateClient("TeamClient");
+            await client.PostAsync("ProduceQueueHistory", null);
         }
 
         public async Task PostHistoryAsync()

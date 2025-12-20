@@ -12,9 +12,9 @@ namespace F1.TeamAPI.Repositories
     public class TeamRepository : ITeamRepository
     {
         public readonly SqlConnection _connection;
-        public readonly ILogger _logger;
+        public readonly ILogger<TeamRepository> _logger;
 
-        public TeamRepository(ConnectionDB c, ILogger logger)
+        public TeamRepository(ConnectionDB c, ILogger<TeamRepository> logger)
         {
             _connection = c.GetSlqConnection();
             _logger = logger;
@@ -108,8 +108,8 @@ namespace F1.TeamAPI.Repositories
 
         public async Task CreateFullTeamAsync(CreateFullTeamRequestDTO dto)
         {
+            await _connection.OpenAsync();
             using var transaction = _connection.BeginTransaction();
-
             try
             {
                 //TEAM
@@ -178,9 +178,64 @@ namespace F1.TeamAPI.Repositories
                     carIds.Add(carId);
                 }
 
-                //ENGINEERS
-                foreach (var engineer in dto.Engineers)
+                ////ENGINEERS
+                //foreach (var engineer in dto.Engineers)
+                //{
+                //    await _connection.ExecuteAsync(
+                //        @"INSERT INTO Engineer
+                //        (Name, Surname, Age, Experience, Type, TeamId, CarId)
+                //        VALUES
+                //        (@Name, @Surname, @Age, @Experience, @Type, @TeamId, @CarId);",
+                //        new
+                //        {
+                //            engineer.Name,
+                //            engineer.Surname,
+                //            engineer.Age,
+                //            engineer.Experience,
+                //            engineer.Type,
+                //            TeamId = teamId,
+                //            engineer.CarId
+                //        },
+                //        transaction
+                //    );
+                //}
+
+                //// ENGINEERS
+                //int carIndex = 0;
+
+                //foreach (var engineer in dto.Engineers)
+                //{
+                //    await _connection.ExecuteAsync(
+                //        @"INSERT INTO Engineer
+                //        (Name, Surname, Age, Experience, Type, TeamId, CarId)
+                //        VALUES
+                //        (@Name, @Surname, @Age, @Experience, @Type, @TeamId, @CarId);",
+                //        new
+                //        {
+                //            engineer.Name,
+                //            engineer.Surname,
+                //            engineer.Age,
+                //            engineer.Experience,
+                //            engineer.Type,
+                //            TeamId = teamId,
+                //            CarId = carIds[carIndex]
+                //        },
+                //        transaction
+                //    );
+
+                //    // alterna carro se quiser 1 engenheiro por carro
+                //    carIndex = (carIndex + 1) % carIds.Count;
+                //}
+
+                // ENGINEERS
+                for (int i = 0; i < dto.Engineers.Count; i++)
                 {
+                    var engineer = dto.Engineers[i];
+
+                    // 0 e 1 → carro 0
+                    // 2 e 3 → carro 1
+                    var carId = carIds[i / 2];
+
                     await _connection.ExecuteAsync(
                         @"INSERT INTO Engineer
                         (Name, Surname, Age, Experience, Type, TeamId, CarId)
@@ -194,7 +249,7 @@ namespace F1.TeamAPI.Repositories
                             engineer.Experience,
                             engineer.Type,
                             TeamId = teamId,
-                            engineer.CarId
+                            CarId = carId
                         },
                         transaction
                     );
@@ -219,7 +274,6 @@ namespace F1.TeamAPI.Repositories
                         transaction
                     );
                 }
-
                 transaction.Commit();
             }
             catch
@@ -425,8 +479,13 @@ namespace F1.TeamAPI.Repositories
         public async Task<List<TeamHistoryResponseDTO>> GetAllTeamsHistoryAsync()
         {
             var sql =
-                @"SELECT Id, Name, Points, Placement, IsActive, TeamId
-                    FROM Team";
+                @"SELECT 
+                      Id           AS TeamId,
+                      Name         AS TeamName,
+                      Points       AS TeamPoints,
+                      Placement    AS TeamPlacement,
+                      IsActive
+                  FROM Team;";
 
             var teams = await _connection.QueryAsync<TeamHistoryResponseDTO>(sql);
             return teams.ToList();

@@ -84,7 +84,7 @@ namespace F1.TeamAPI.Repositories
                         b.Surname,
                         b.Age,
                         b.Type,
-                        b.Status,
+                        b.IsActive,
                         b.TeamId
                     FROM Boss b
                     INNER JOIN Team t ON t.Id = b.TeamId
