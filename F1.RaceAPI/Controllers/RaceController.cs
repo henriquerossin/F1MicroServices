@@ -32,7 +32,7 @@ namespace F1.RaceAPI.Controllers
             }
         }
 
-        [HttpPost("/Event/Publish")]
+        [HttpPost("Event/Publish")]
         public async Task<IActionResult> PublicLastEventAsync()
         {
             try

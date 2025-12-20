@@ -7,6 +7,7 @@ using F1.TeamAPI.Services.Interfaces;
 using F1.TeamAPI.Services.Validation;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 
@@ -20,7 +21,7 @@ namespace F1.TeamAPI.Services
         private readonly IPilotRepository _pilotRepo;
         private readonly TeamCreationValidator _validator;
         private readonly ILogger<TeamService> _logger;
-        private readonly HttpClient _clientRace;
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly TeamCountValidation _teamCountValidation;
         private readonly TeamPilotsValidator _teamPilotsValidator;
         private readonly TeamCarsValidator _teamCarsValidator;
@@ -39,7 +40,8 @@ namespace F1.TeamAPI.Services
             TeamPilotsValidator teamPilotsValidator,
             TeamCarsValidator teamCarsValidator,
             CarEngineersValidator carEngineersValidator,
-            TeamBossesValidator teamBossesValidator)
+            TeamBossesValidator teamBossesValidator,
+            IHttpClientFactory httpClientFactory)
         {
             _teamRepo = teamRepo;
             _carRepo = carRepo;
@@ -47,7 +49,7 @@ namespace F1.TeamAPI.Services
             _engRepo = engRepo;
             _validator = validator;
             _logger = logger;
-            _clientRace = clientRace;
+            _httpClientFactory = httpClientFactory;
             _teamCountValidation = teamCountValidation;
             _teamPilotsValidator = teamPilotsValidator;
             _teamCarsValidator = teamCarsValidator;
@@ -192,7 +194,7 @@ namespace F1.TeamAPI.Services
         //    }
         //}
 
-        public async Task ProduceQueueAsync(HistoryDTO history)
+        public async Task ProduceQueueAsync(HistoryDTO history) // socorro()
         {
             try
             {
@@ -233,6 +235,10 @@ namespace F1.TeamAPI.Services
                 await connection.CloseAsync();
 
                 _logger.LogInformation("Mensagem enviada para a fila History");
+                //await _clientRace.PostAsync("Circuit/1/Event/1", null);
+
+                var client = _httpClientFactory.CreateClient("RaceAPI");
+                await client.PostAsync("Circuit/1/Event/1", null);
             }
             catch (Exception ex)
             {

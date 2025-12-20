@@ -15,7 +15,7 @@ builder.Services.AddControllers();
 builder.Services.AddScoped<ConnectionDB>();
 
 builder.Services.AddHttpClient("RaceAPI", client =>
-    client.BaseAddress = new Uri("https://localhost:7001/api"));
+    client.BaseAddress = new Uri("https://localhost:7001/api/"));
 
 // Repositories
 builder.Services.AddScoped<ITeamRepository, TeamRepository>();

@@ -29,156 +29,296 @@ namespace F1.RaceAPI.Services
 
         public List<HistoryDTO> historyList = [];
 
+        //public async Task ConsumeAndSaveHistoryAsync(int idRound, int idEvent)
+        //{
+        //    // Conecting to RabbitMQ
+        //    var factory = new ConnectionFactory { HostName = "localhost" };
+
+        //    using var connection = await factory.CreateConnectionAsync();
+
+        //    using var channel = await connection.CreateChannelAsync();
+
+        //    // Declaring the History Queue
+        //    await channel.QueueDeclareAsync(
+        //        queue: "History",
+        //        durable: false,
+        //        exclusive: false,
+        //        autoDelete: false,
+        //        arguments: null
+        //    );
+
+        //    // Declaring the AttHistory Queue
+        //    await channel.QueueDeclareAsync(
+        //        queue: "AttHistory",
+        //        durable: false,
+        //        exclusive: false,
+        //        autoDelete: false,
+        //        arguments: null
+        //    );
+
+        //    // Searching the last event in database
+        //    var lastEvent = await _raceRepository.GetLastEventAsync();
+
+        //    // Setting current event type, if no event found, start from 1
+        //    _currentEventType = lastEvent?.EventType + 1 ?? 1;
+
+        //    if (_currentEventType > 5)
+        //    {
+        //        _currentEventType = 1;
+        //    }
+
+        //    // Validating the request before consuming the history queue
+        //    if (idEvent != _currentEventType)
+        //    {
+        //        throw new InvalidOperationException($"Invalid Race! The next race is {_currentEventType}");
+        //    }
+
+        //    var currentCircuit = await GetCircuitIdName();
+
+        //    if (currentCircuit is null || currentCircuit.Id != idRound)
+        //    {
+        //        throw new InvalidOperationException($"Wrong circuit! The next circuit is {currentCircuit}");
+        //    }
+
+        //    var endCircuitValidation = await _raceRepository.GetLastCircuitAsync(currentCircuit.Id);
+
+        //    if (endCircuitValidation is true)
+        //    {
+        //        throw new InvalidOperationException($"Wrong circuit! this circuit is already done");
+        //    }
+
+        //    // Creating consumer
+        //    var consumer = new AsyncEventingBasicConsumer(channel);
+
+        //    consumer.ReceivedAsync += async (model, ea) =>
+        //    {
+        //        // Receiving message
+        //        var body = ea.Body.ToArray();
+
+        //        var message = Encoding.UTF8.GetString(body);
+
+        //        var history = JsonSerializer.Deserialize<HistoryDTO>(message);
+
+        //        var mappedHistory = new HistoryDTO
+        //        {
+        //            Id = MongoDB.Bson.ObjectId.GenerateNewId().ToString(),
+
+        //            CreatedAt = DateTime.UtcNow,
+
+        //            Team = history.Team,
+
+        //            FirstPilot = history.FirstPilot,
+        //            FirstCar = history.FirstCar,
+        //            FirstEngineerCa = history.FirstEngineerCa,
+        //            FirstEngineerCp = history.FirstEngineerCp,
+
+        //            SecondPilot = history.SecondPilot,
+        //            SecondCar = history.SecondCar,
+        //            SecondEngineerCa = history.SecondEngineerCa,
+        //            SecondEngineerCp = history.SecondEngineerCp,
+        //        };
+
+        //        var circuit = currentCircuit;
+
+        //        FinalHistoryResponseDTO finalEvent = null;
+
+        //        var count = 0;
+
+        //        lock (historyList)
+        //        {
+        //            historyList.Add(mappedHistory);
+
+        //            if (historyList.Count == 11)
+        //            {
+        //                finalEvent = new FinalHistoryResponseDTO
+        //                {
+        //                    Id = MongoDB.Bson.ObjectId.GenerateNewId().ToString(),
+        //                    CreatedAt = DateTime.UtcNow,
+        //                    EventType = _currentEventType,
+        //                    CompetitionId = new CompetitionHistoryResponseDTO
+        //                    {
+        //                        Id = circuit.Id,
+        //                        Name = circuit.Name
+        //                    },
+
+        //                    HistoryList = historyList.ToList()
+        //                };
+
+        //                historyList.Clear();
+
+        //                _currentEventType++;
+
+        //                if (_currentEventType > 5)
+        //                {
+        //                    count = _currentEventType;
+        //                    _currentEventType = 1;
+        //                }
+        //            }
+        //        }
+
+        //        if(count is 5)
+        //        {
+        //            await ConcludeCircuit();
+        //            count = 0;
+        //        }
+
+        //        if (finalEvent is not null)
+        //        {
+        //            // Saving FinalHistoryResponseDTO to database in MongoDB
+        //            await _raceRepository.SaveEventAsync(finalEvent);
+        //        }
+
+        //        var attBody = Encoding.UTF8.GetBytes(
+        //            JsonSerializer.Serialize(mappedHistory)
+        //        );
+        //    };
+
+        //    // Consuming the History Queue
+        //    await channel.BasicConsumeAsync(
+        //        queue: "History",
+        //        autoAck: true,
+        //        consumer: consumer
+        //    );
+        //}
+
         public async Task ConsumeAndSaveHistoryAsync(int idRound, int idEvent)
         {
-            // Conecting to RabbitMQ
             var factory = new ConnectionFactory { HostName = "localhost" };
 
             using var connection = await factory.CreateConnectionAsync();
-
             using var channel = await connection.CreateChannelAsync();
 
-            // Declaring the History Queue
             await channel.QueueDeclareAsync(
                 queue: "History",
-                durable: false,
+                durable: true,
                 exclusive: false,
                 autoDelete: false,
                 arguments: null
             );
 
-            // Declaring the AttHistory Queue
             await channel.QueueDeclareAsync(
                 queue: "AttHistory",
-                durable: false,
+                durable: true,
                 exclusive: false,
                 autoDelete: false,
                 arguments: null
             );
 
-            // Searching the last event in database
             var lastEvent = await _raceRepository.GetLastEventAsync();
-
-            // Setting current event type, if no event found, start from 1
             _currentEventType = lastEvent?.EventType + 1 ?? 1;
 
             if (_currentEventType > 5)
-            {
                 _currentEventType = 1;
-            }
 
-            // Validating the request before consuming the history queue
-            if (idEvent != _currentEventType)
-            {
-                throw new InvalidOperationException($"Invalid Race! The next race is {_currentEventType}");
-            }
+            //if (idEvent != _currentEventType)
+            //    throw new InvalidOperationException($"Invalid Race! The next race is {_currentEventType}");
 
             var currentCircuit = await GetCircuitIdName();
 
-            if (currentCircuit is null || currentCircuit.Id != idRound)
-            {
-                throw new InvalidOperationException($"Wrong circuit! The next circuit is {currentCircuit}");
-            }
+            //if (currentCircuit is null || currentCircuit.Id != idRound)
+            //    throw new InvalidOperationException($"Wrong circuit! The next circuit is {currentCircuit}");
 
             var endCircuitValidation = await _raceRepository.GetLastCircuitAsync(currentCircuit.Id);
 
-            if (endCircuitValidation is true)
-            {
-                throw new InvalidOperationException($"Wrong circuit! this circuit is already done");
-            }
+            //if (endCircuitValidation is true)
+            //    throw new InvalidOperationException($"Wrong circuit! this circuit is already done");
 
-            // Creating consumer
             var consumer = new AsyncEventingBasicConsumer(channel);
 
-            consumer.ReceivedAsync += async (model, ea) =>
+            consumer.ReceivedAsync += async (_, ea) =>
             {
-                // Receiving message
-                var body = ea.Body.ToArray();
-
-                var message = Encoding.UTF8.GetString(body);
-
-                var history = JsonSerializer.Deserialize<HistoryDTO>(message);
-
-                var mappedHistory = new HistoryDTO
+                try
                 {
-                    Id = MongoDB.Bson.ObjectId.GenerateNewId().ToString(),
+                    var body = ea.Body.ToArray();
+                    var message = Encoding.UTF8.GetString(body);
+                    var history = JsonSerializer.Deserialize<HistoryDTO>(message);
 
-                    CreatedAt = DateTime.UtcNow,
-
-                    Team = history.Team,
-
-                    FirstPilot = history.FirstPilot,
-                    FirstCar = history.FirstCar,
-                    FirstEngineerCa = history.FirstEngineerCa,
-                    FirstEngineerCp = history.FirstEngineerCp,
-
-                    SecondPilot = history.SecondPilot,
-                    SecondCar = history.SecondCar,
-                    SecondEngineerCa = history.SecondEngineerCa,
-                    SecondEngineerCp = history.SecondEngineerCp,
-                };
-
-                var circuit = currentCircuit;
-
-                FinalHistoryResponseDTO finalEvent = null;
-
-                var count = 0;
-
-                lock (historyList)
-                {
-                    historyList.Add(mappedHistory);
-
-                    if (historyList.Count == 11)
+                    var mappedHistory = new HistoryDTO
                     {
-                        finalEvent = new FinalHistoryResponseDTO
+                        Id = MongoDB.Bson.ObjectId.GenerateNewId().ToString(),
+                        CreatedAt = DateTime.UtcNow,
+
+                        Team = history.Team,
+
+                        FirstPilot = history.FirstPilot,
+                        FirstCar = history.FirstCar,
+                        FirstEngineerCa = history.FirstEngineerCa,
+                        FirstEngineerCp = history.FirstEngineerCp,
+
+                        SecondPilot = history.SecondPilot,
+                        SecondCar = history.SecondCar,
+                        SecondEngineerCa = history.SecondEngineerCa,
+                        SecondEngineerCp = history.SecondEngineerCp,
+                    };
+
+                    FinalHistoryResponseDTO finalEvent = null;
+                    //var count = 0;
+                    bool shouldConclude = false; // Variável auxiliar para evitar erro de lógica
+
+                    lock (historyList)
+                    {
+                        historyList.Add(mappedHistory);
+
+                        _logger.LogWarning("COUNT ATUAL: {count}", historyList.Count);
+
+                        if (historyList.Count == 11)
                         {
-                            Id = MongoDB.Bson.ObjectId.GenerateNewId().ToString(),
-                            CreatedAt = DateTime.UtcNow,
-                            EventType = _currentEventType,
-                            CompetitionId = new CompetitionHistoryResponseDTO
+                            finalEvent = new FinalHistoryResponseDTO
                             {
-                                Id = circuit.Id,
-                                Name = circuit.Name
-                            },
+                                Id = MongoDB.Bson.ObjectId.GenerateNewId().ToString(),
+                                CreatedAt = DateTime.UtcNow,
+                                EventType = _currentEventType,
+                                CompetitionId = new CompetitionHistoryResponseDTO
+                                {
+                                    Id = currentCircuit.Id,
+                                    Name = currentCircuit.Name
+                                },
+                                HistoryList = historyList.ToList()
+                            };
 
-                            HistoryList = historyList.ToList()
-                        };
+                            // historyList.Clear();
+                            _currentEventType++;
 
-                        historyList.Clear();
-
-                        _currentEventType++;
-
-                        if (_currentEventType > 5)
-                        {
-                            count = _currentEventType;
-                            _currentEventType = 1;
+                            if (_currentEventType == 5)
+                            {
+                                shouldConclude = true;
+                                //count = _currentEventType;
+                                _currentEventType = 1;
+                            }
+                            else
+                            {
+                                _currentEventType++;
+                            }
                         }
                     }
-                }
 
-                if(count is 5)
+                    if (shouldConclude)
+                    {
+                        await ConcludeCircuit();
+                    }
+
+                    if (finalEvent is not null)
+                        await _raceRepository.SaveEventAsync(finalEvent);
+
+                    await channel.BasicAckAsync(ea.DeliveryTag, false);
+                    //await channel.BasicQosAsync(prefetchSize: 0, prefetchCount: 1, global: false);
+
+                    //var consumer = new AsyncEventingBasicConsumer(channel);
+                }
+                catch (Exception ex)
                 {
-                    await ConcludeCircuit();
-                    count = 0;
+                    _logger.LogError(ex, "Erro ao processar mensagem da fila History");
+                    await channel.BasicNackAsync(ea.DeliveryTag, false, true);
                 }
-
-                if (finalEvent is not null)
-                {
-                    // Saving FinalHistoryResponseDTO to database in MongoDB
-                    await _raceRepository.SaveEventAsync(finalEvent);
-                }
-
-                var attBody = Encoding.UTF8.GetBytes(
-                    JsonSerializer.Serialize(mappedHistory)
-                );
             };
 
-            // Consuming the History Queue
             await channel.BasicConsumeAsync(
                 queue: "History",
-                autoAck: true,
+                autoAck: false,
                 consumer: consumer
             );
+
+            await Task.Delay(Timeout.Infinite);
         }
 
         public async Task<FinalHistoryResponseDTO?> GetOneFinalHistory(int idCircuit, int idEvent)
@@ -212,7 +352,7 @@ namespace F1.RaceAPI.Services
             // Declaring the AttHistory Queue
             await channel.QueueDeclareAsync(
                 queue: "AttHistory",
-                durable: false,
+                durable: true,
                 exclusive: false,
                 autoDelete: false,
                 arguments: null
@@ -266,7 +406,7 @@ namespace F1.RaceAPI.Services
             {
                 var client = _httpClientFactory.CreateClient("EngineeringClient");
 
-                var response = await client.PutAsync("Engineering", null);
+                await client.PutAsync("Engineering", null);
             }
             catch (Exception e)
             {

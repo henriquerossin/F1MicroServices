@@ -340,6 +340,7 @@ namespace F1.CompetitionAPI.Services
                             await _repository.StartTemp();
                             await Socorro();
 
+                            _ = PostHistoryAsync();
                         }
                     }
                 }
@@ -360,6 +361,7 @@ namespace F1.CompetitionAPI.Services
         {
             var client = _httpClientFactory.CreateClient("TeamClient");
             await client.PostAsync("ProduceQueueHistory", null);
+            
         }
 
         public async Task PostHistoryAsync()

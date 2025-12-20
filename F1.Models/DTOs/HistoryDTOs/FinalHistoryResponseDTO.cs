@@ -13,7 +13,7 @@ namespace F1.Models.DTOs.HistoryDTOs
         public DateTime CreatedAt { get; init; }
 
         public CompetitionHistoryResponseDTO CompetitionId { get; init; }
-        public List<HistoryDTO> HistoryList { get; init; }
+        public List<HistoryDTO> HistoryList { get; init; } = new List<HistoryDTO>();
         public int EventType { get; init; }
     }
 }
