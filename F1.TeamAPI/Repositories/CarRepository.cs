@@ -9,10 +9,12 @@ namespace F1.TeamAPI.Repositories
     public class CarRepository : ICarRepository
     {
         private readonly SqlConnection _connection;
+        private readonly ILogger<CarRepository> _logger;
 
-        public CarRepository(ConnectionDB c)
+        public CarRepository(ConnectionDB c, ILogger<CarRepository> logger)
         {
             _connection = c.GetSlqConnection();
+            _logger = logger;
         }
 
         public async Task CreateCarAsync(CarRequestDTO dto)
@@ -186,6 +188,16 @@ namespace F1.TeamAPI.Repositories
             {
                 throw new Exception("Erro ao atualizar CA e CP: " + ex.Message);
             }
+        }
+
+        public async Task<List<CarHistoryResponseDTO>> GetAllCarsHistoryAsync()
+        {
+            var sql =
+                @"SELECT Id, Model, AerodynamicCoefficent, PowerCoefficient 
+                    FROM Car";
+
+            var cars = await _connection.QueryAsync<CarHistoryResponseDTO>(sql);
+            return cars.ToList();
         }
     }
 }

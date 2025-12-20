@@ -70,5 +70,20 @@ namespace F1.TeamAPI.Controllers
                 return StatusCode(500, "Internal server error");
             }
         }
+
+        [HttpPost("ProduceQueueHistory")]
+        public async Task<IActionResult> ProduceQueueHistoryAsync()
+        {
+            try
+            {
+                await _teamService.GetAllHistoryAsync();
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while producing the history queue.");
+                return StatusCode(500, "Internal server error");
+            }
+        }
     }
 }

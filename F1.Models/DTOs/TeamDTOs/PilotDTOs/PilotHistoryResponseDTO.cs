@@ -8,6 +8,6 @@
         public int PilotPoints { get; init; }
         public int PilotPlacement { get; init; }
         public decimal Experience { get; init; }
-
+        public int TeamId { get; init; }
     }
 }

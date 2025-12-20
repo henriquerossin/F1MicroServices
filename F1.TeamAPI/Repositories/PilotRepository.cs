@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using F1.Models.DTOs.TeamDTOs.PilotDTOs;
+using F1.Models.DTOs.TeamDTOs.TeamDTOs;
 using F1.TeamAPI.Data;
 using F1.TeamAPI.Repositories.Interfaces;
 using Microsoft.Data.SqlClient;
@@ -9,10 +10,12 @@ namespace F1.TeamAPI.Repositories
     public class PilotRepository : IPilotRepository
     {
         private readonly SqlConnection _connection;
+        private readonly ILogger<PilotRepository> _logger;
 
-        public PilotRepository(ConnectionDB c)
+        public PilotRepository(ConnectionDB c, ILogger<PilotRepository> logger)
         {
             _connection = c.GetSlqConnection();
+            _logger = logger;
         }
 
         public async Task CreatePilotAsync(PilotRequestDTO dto)
@@ -208,6 +211,16 @@ namespace F1.TeamAPI.Repositories
                 Handicap = handicap,
                 Points = points
             });
+        }
+
+        public async Task<List<PilotHistoryResponseDTO>> GetAllPilotsHistoryAsync()
+        {
+            var sql =
+                @"SELECT Id, Name, Handicap, Points, Position, Experience, TeamId
+                FROM Pilot";
+
+            var pilots = await _connection.QueryAsync<PilotHistoryResponseDTO>(sql);
+            return pilots.ToList();
         }
     }
 }

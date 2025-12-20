@@ -1,6 +1,6 @@
 ﻿using Dapper;
+using F1.Models.DTOs.HistoryDTOs;
 using F1.Models.DTOs.TeamDTOs.TeamDTOs;
-using F1.Models.TeamModels;
 using F1.TeamAPI.Data;
 using F1.TeamAPI.DTOs.TeamCreation;
 using F1.TeamAPI.Repositories.Interfaces;
@@ -12,10 +12,12 @@ namespace F1.TeamAPI.Repositories
     public class TeamRepository : ITeamRepository
     {
         public readonly SqlConnection _connection;
+        public readonly ILogger _logger;
 
-        public TeamRepository(ConnectionDB c)
+        public TeamRepository(ConnectionDB c, ILogger logger)
         {
             _connection = c.GetSlqConnection();
+            _logger = logger;
         }
 
         public async Task<List<TeamResponseDTO>> GetAllTeamsAsync()
@@ -33,8 +35,8 @@ namespace F1.TeamAPI.Repositories
             {
                 throw new Exception("Erro ao obter times: " + ex.Message);
             }
-
         }
+
         public async Task<List<TeamResponseDTO>> GetAllTeamsFinalAsync()
         {
             try
@@ -87,7 +89,6 @@ namespace F1.TeamAPI.Repositories
             }
         }
 
-
         public async Task UpdateTeamPlacementAndPointsAsync(int teamId, int placement, int points)
         {
             const string sql = @"
@@ -104,7 +105,6 @@ namespace F1.TeamAPI.Repositories
                 Points = points
             });
         }
-
 
         public async Task CreateFullTeamAsync(CreateFullTeamRequestDTO dto)
         {
@@ -357,6 +357,15 @@ namespace F1.TeamAPI.Repositories
                 throw;
             }
         }
+
+        public async Task<List<TeamHistoryResponseDTO>> GetAllTeamsHistoryAsync()
+        {
+            var sql =
+                @"SELECT Id, Name, Points, Placement, IsActive, TeamId
+                    FROM Team";
+
+            var teams = await _connection.QueryAsync<TeamHistoryResponseDTO>(sql);
+            return teams.ToList();
+        }
     }
 }
-

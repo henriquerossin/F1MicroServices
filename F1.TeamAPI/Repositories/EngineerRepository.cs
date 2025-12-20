@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using F1.Models.DTOs.TeamDTOs.EngineerDTOs;
+using F1.Models.DTOs.TeamDTOs.PilotDTOs;
 using F1.TeamAPI.Data;
 using F1.TeamAPI.Repositories.Interfaces;
 using Microsoft.Data.SqlClient;
@@ -9,10 +10,12 @@ namespace F1.TeamAPI.Repositories
     public class EngineerRepository : IEngineerRepository
     {
         private readonly SqlConnection _connection;
+        private readonly ILogger<EngineerRepository> _logger;
 
-        public EngineerRepository(ConnectionDB c)
+        public EngineerRepository(ConnectionDB c, ILogger<EngineerRepository> logger)
         {
             _connection = c.GetSlqConnection();
+            _logger = logger;
         }
 
         public async Task CreateEngineerAsync(EngineerRequestDTO dto)
@@ -171,6 +174,26 @@ namespace F1.TeamAPI.Repositories
             catch (Exception ex)
             {
                 throw new Exception("Erro ao atualizar engenheiro: " + ex.Message);
+            }
+        }
+
+        public async Task<List<EngineerHistoryResponseDTO>> GetAllEngineersHistoryAsync()
+        {
+            try
+            {
+                var sql = @"
+            SELECT Id, Experience, Type, TeamId
+            FROM Engineer";
+
+                var engineers = await _connection
+                    .QueryAsync<EngineerHistoryResponseDTO>(sql);
+
+                return engineers.ToList();
+            }
+            catch (SqlException e)
+            {
+                _logger.LogError(e, "SQL Error while retrieving engineers history");
+                throw;
             }
         }
     }
