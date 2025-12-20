@@ -196,14 +196,6 @@ namespace F1.RaceAPI.Services
                 arguments: null
             );
 
-            await channel.QueueDeclareAsync(
-                queue: "AttHistory",
-                durable: true,
-                exclusive: false,
-                autoDelete: false,
-                arguments: null
-            );
-
             var lastEvent = await _raceRepository.GetLastEventAsync();
             _currentEventType = lastEvent?.EventType + 1 ?? 1;
 
@@ -318,7 +310,7 @@ namespace F1.RaceAPI.Services
                 consumer: consumer
             );
 
-            await Task.Delay(Timeout.Infinite);
+            await Task.Delay(5000);
         }
 
         public async Task<FinalHistoryResponseDTO?> GetOneFinalHistory(int idCircuit, int idEvent)
@@ -373,7 +365,7 @@ namespace F1.RaceAPI.Services
             await UpdateInfosForEvent();
         }
 
-        public async Task<CircuitHistoryIdNameResponseDTO?> GetCircuitIdName()
+        public async Task<CircuitHistoryIdNameResponseDTO> GetCircuitIdName()
         {
             try
             {
@@ -385,7 +377,13 @@ namespace F1.RaceAPI.Services
 
                 var finalBody = JsonSerializer.Deserialize<CircuitHistoryIdNameResponseDTO>(body);
 
-                return finalBody;
+                CircuitHistoryIdNameResponseDTO finalObject = new CircuitHistoryIdNameResponseDTO
+                {
+                    Id = finalBody.Id,
+                    Name = finalBody.Name
+                };
+
+                return finalObject;
             }
             catch (Exception e)
             {

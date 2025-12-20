@@ -308,13 +308,13 @@ namespace F1.TeamAPI.Services
                 var firstPilot = teamPilots.ElementAtOrDefault(0);
                 var secondPilot = teamPilots.ElementAtOrDefault(1);
 
-                // Cars vinculados aos pilotos
+                //Cars vinculados aos pilotos
                 var firstCar = firstPilot is null
                     ? null
                     : cars.FirstOrDefault(c => c.PilotId == firstPilot.PilotId);
 
-                var secondCar = secondPilot is null
-                    ? null
+                var secondCar = secondPilot is null 
+                    ? null 
                     : cars.FirstOrDefault(c => c.PilotId == secondPilot.PilotId);
 
                 // Engineers do time

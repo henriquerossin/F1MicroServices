@@ -16,7 +16,6 @@ namespace F1.CompetitionAPI.Services
         private readonly ICompetitionRepository _repository;
         private readonly IHttpClientFactory _httpClientFactory;
 
-
         public CompetitionService(ILogger<CompetitionService> logger, ICompetitionRepository repository , IHttpClientFactory httpClientFactory)
         {
             _logger = logger;
@@ -338,7 +337,7 @@ namespace F1.CompetitionAPI.Services
                         {
                             //var circuits = await _repository.GetAllCircuitsActivesOrdenedAsync();
                             await _repository.StartTemp();
-                            await Socorro();
+                            //await Socorro();
 
                             _ = PostHistoryAsync();
                         }
@@ -361,7 +360,6 @@ namespace F1.CompetitionAPI.Services
         {
             var client = _httpClientFactory.CreateClient("TeamClient");
             await client.PostAsync("ProduceQueueHistory", null);
-            
         }
 
         public async Task PostHistoryAsync()
