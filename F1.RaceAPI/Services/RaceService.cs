@@ -202,18 +202,18 @@ namespace F1.RaceAPI.Services
             if (_currentEventType > 5)
                 _currentEventType = 1;
 
-            //if (idEvent != _currentEventType)
-            //    throw new InvalidOperationException($"Invalid Race! The next race is {_currentEventType}");
+            if (idEvent != _currentEventType)
+                throw new InvalidOperationException($"Invalid Race! The next race is {_currentEventType}");
 
             var currentCircuit = await GetCircuitIdName();
 
-            //if (currentCircuit is null || currentCircuit.Id != idRound)
-            //    throw new InvalidOperationException($"Wrong circuit! The next circuit is {currentCircuit}");
+            if (currentCircuit is null || currentCircuit.Id != idRound)
+                throw new InvalidOperationException($"Wrong circuit! The next circuit is {currentCircuit}");
 
             var endCircuitValidation = await _raceRepository.GetLastCircuitAsync(currentCircuit.Id);
 
-            //if (endCircuitValidation is true)
-            //    throw new InvalidOperationException($"Wrong circuit! this circuit is already done");
+            if (endCircuitValidation is true)
+                throw new InvalidOperationException($"Wrong circuit! this circuit is already done");
 
             var consumer = new AsyncEventingBasicConsumer(channel);
 
@@ -244,8 +244,7 @@ namespace F1.RaceAPI.Services
                     };
 
                     FinalHistoryResponseDTO finalEvent = null;
-                    //var count = 0;
-                    bool shouldConclude = false; // Variável auxiliar para evitar erro de lógica
+                    bool shouldConclude = false;
 
                     lock (historyList)
                     {
@@ -268,7 +267,7 @@ namespace F1.RaceAPI.Services
                                 HistoryList = historyList.ToList()
                             };
 
-                            // historyList.Clear();
+                            historyList.Clear();
                             _currentEventType++;
 
                             if (_currentEventType == 5)
@@ -276,10 +275,6 @@ namespace F1.RaceAPI.Services
                                 shouldConclude = true;
                                 //count = _currentEventType;
                                 _currentEventType = 1;
-                            }
-                            else
-                            {
-                                _currentEventType++;
                             }
                         }
                     }
@@ -293,9 +288,6 @@ namespace F1.RaceAPI.Services
                         await _raceRepository.SaveEventAsync(finalEvent);
 
                     await channel.BasicAckAsync(ea.DeliveryTag, false);
-                    //await channel.BasicQosAsync(prefetchSize: 0, prefetchCount: 1, global: false);
-
-                    //var consumer = new AsyncEventingBasicConsumer(channel);
                 }
                 catch (Exception ex)
                 {
@@ -310,7 +302,7 @@ namespace F1.RaceAPI.Services
                 consumer: consumer
             );
 
-            await Task.Delay(5000);
+            await Task.Delay(10000);
         }
 
         public async Task<FinalHistoryResponseDTO?> GetOneFinalHistory(int idCircuit, int idEvent)
