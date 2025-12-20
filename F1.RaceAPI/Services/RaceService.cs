@@ -16,15 +16,15 @@ namespace F1.RaceAPI.Services
 
         private readonly IRaceRepository _raceRepository;
 
-        private readonly HttpClient _clientCompetition;
+        private readonly IHttpClientFactory _httpClientFactory;
 
         private int _currentEventType;
 
-        public RaceService(ILogger<RaceService> logger, IRaceRepository raceRepository, HttpClient client)
+        public RaceService(ILogger<RaceService> logger, IRaceRepository raceRepository, IHttpClientFactory httpClientFactory)
         {
             _logger = logger;
             _raceRepository = raceRepository;
-            _clientCompetition = client;
+            _httpClientFactory = httpClientFactory;
         }
 
         public List<HistoryDTO> historyList = [];
@@ -220,20 +220,42 @@ namespace F1.RaceAPI.Services
                 routingKey: "AttHistory",
                 body: body
             );
+
+            await UpdateInfosForEvent();
         }
 
         public async Task<CircuitHistoryIdNameResponseDTO?> GetCircuitIdName()
         {
             try
             {
-                //var response = await _clientCompetition.GetAsync(_clientCompetition.BaseAddress + "GetCircuitIdName");
-                var response = await _clientCompetition.GetAsync("GetCircuitIdName");
+                var client = _httpClientFactory.CreateClient("CompetitionClient");
+
+                var response = await client.GetAsync("GetCircuitIdName");
 
                 var body = await response.Content.ReadAsStringAsync();
 
                 var finalBody = JsonSerializer.Deserialize<CircuitHistoryIdNameResponseDTO>(body);
 
                 return finalBody;
+            }
+            catch (Exception e)
+            {
+                throw new InvalidOperationException(e.Message);
+            }
+        }
+
+        public async Task ConcludeCircuit()
+        {
+            throw new NotImplementedException(); 
+        }
+
+        public async Task UpdateInfosForEvent()
+        {
+            try
+            {
+                var client = _httpClientFactory.CreateClient("UpdateInfosForEvent");
+
+                var response = await client.PutAsync("Engineering", null);
             }
             catch (Exception e)
             {

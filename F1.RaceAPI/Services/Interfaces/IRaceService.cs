@@ -8,5 +8,6 @@ namespace F1.RaceAPI.Services.Interfaces
         Task<FinalHistoryResponseDTO?> GetOneFinalHistory(int idCircuit, int idEvent);
         Task PublishLastEventAsync();
         Task<CircuitHistoryIdNameResponseDTO?> GetCircuitIdName();
+        Task UpdateInfosForEvent();
     }
 }
