@@ -4,6 +4,7 @@ using F1.Models.TeamModels;
 using F1.TeamAPI.Data;
 using F1.TeamAPI.DTOs.TeamCreation;
 using F1.TeamAPI.Repositories.Interfaces;
+using F1.TeamAPI.Services.Generators;
 using Microsoft.Data.SqlClient;
 
 namespace F1.TeamAPI.Repositories
@@ -52,7 +53,6 @@ namespace F1.TeamAPI.Repositories
             }
 
         }
-
 
         public async Task CreateTeamAsync(TeamRequestDTO dto)
         {
@@ -106,14 +106,6 @@ namespace F1.TeamAPI.Repositories
         }
 
 
-
-
-
-
-
-
-
-
         public async Task CreateFullTeamAsync(CreateFullTeamRequestDTO dto)
         {
             using var transaction = _connection.BeginTransaction();
@@ -136,10 +128,10 @@ namespace F1.TeamAPI.Repositories
                 {
                     var pilotId = await _connection.ExecuteScalarAsync<int>(
                         @"INSERT INTO Pilot
-                        (Name, Surname, Weight, Age, IdentificationNumber, Status,
+                        (Name, Surname, Weight, Age, IdentificationNumber,
                          Experience, Handicap, TeamId)
                         VALUES
-                        (@Name, @Surname, @Weight, @Age, @IdentificationNumber, @Status,
+                        (@Name, @Surname, @Weight, @Age, @IdentificationNumber, 
                          @Experience, @Handicap, @TeamId);
                         SELECT CAST(SCOPE_IDENTITY() AS INT);",
                         new
@@ -149,7 +141,6 @@ namespace F1.TeamAPI.Repositories
                             pilot.Weight,
                             pilot.Age,
                             pilot.IdentificationNumber,
-                            pilot.Status,
                             pilot.Experience,
                             pilot.Handicap,
                             TeamId = teamId
@@ -192,9 +183,9 @@ namespace F1.TeamAPI.Repositories
                 {
                     await _connection.ExecuteAsync(
                         @"INSERT INTO Engineer
-                        (Name, Surname, Age, Experience, Type, Status, TeamId, CarId)
+                        (Name, Surname, Age, Experience, Type, TeamId, CarId)
                         VALUES
-                        (@Name, @Surname, @Age, @Experience, @Type, @Status, @TeamId, @CarId);",
+                        (@Name, @Surname, @Age, @Experience, @Type, @TeamId, @CarId);",
                         new
                         {
                             engineer.Name,
@@ -202,7 +193,6 @@ namespace F1.TeamAPI.Repositories
                             engineer.Age,
                             engineer.Experience,
                             engineer.Type,
-                            engineer.Status,
                             TeamId = teamId,
                             engineer.CarId
                         },
@@ -215,16 +205,144 @@ namespace F1.TeamAPI.Repositories
                 {
                     await _connection.ExecuteAsync(
                         @"INSERT INTO Boss
-                        (Name, Surname, Age, Type, Status, TeamId)
+                        (Name, Surname, Age, Type, TeamId)
                         VALUES
-                        (@Name, @Surname, @Age, @Type, @Status, @TeamId);",
+                        (@Name, @Surname, @Age, @Type, @TeamId);",
                         new
                         {
                             boss.Name,
                             boss.Surname,
                             boss.Age,
                             boss.Type,
-                            boss.Status,
+                            TeamId = teamId
+                        },
+                        transaction
+                    );
+                }
+
+                transaction.Commit();
+            }
+            catch
+            {
+                transaction.Rollback();
+                throw;
+            }
+        }
+
+        public async Task CreateFullTeamRandomAsync(CreateFullTeamRequestDTO dto)
+        {
+            using var transaction = _connection.BeginTransaction();
+
+            try
+            {
+                var TeamName = TeamGenerator.NameGenerator();
+                //TEAM
+                var teamId = await _connection.ExecuteScalarAsync<int>(
+                    @"INSERT INTO Team (Name)
+                      VALUES (@Name);
+                      SELECT CAST(SCOPE_IDENTITY() AS INT);",
+                    new { TeamName },
+                    transaction
+                );
+
+                //PILOTS
+                var pilotIds = new List<int>();
+
+                foreach (var pilot in dto.Pilots)
+                {
+                    var pilotName = PilotGenerator.PilotName();
+                    var pilotSurname = PilotGenerator.PilotSurname();
+                    var pilotWeight = PilotGenerator.PilotWeight();
+                    var pilotAge = PilotGenerator.PilotAge();
+
+                    var pilotId = await _connection.ExecuteScalarAsync<int>(
+                        @"INSERT INTO Pilot
+                        (Name, Surname, Weight, Age, IdentificationNumber,
+                         Experience, Handicap, TeamId)
+                        VALUES
+                        (@Name, @Surname, @Weight, @Age, @IdentificationNumber, 
+                         @Experience, @Handicap, @TeamId);
+                        SELECT CAST(SCOPE_IDENTITY() AS INT);",
+                        new
+                        {
+                            pilotName,
+                            pilotSurname,
+                            pilot.Weight,
+                            pilot.Age,
+                            pilot.IdentificationNumber,
+                            pilot.Experience,
+                            pilot.Handicap,
+                            TeamId = teamId
+                        },
+                        transaction
+                    );
+
+                    pilotIds.Add(pilotId);
+                }
+
+                //CARS 
+                var carIds = new List<int>();
+
+                for (int i = 0; i < dto.Cars.Count; i++)
+                {
+                    var car = dto.Cars[i];
+
+                    var carId = await _connection.ExecuteScalarAsync<int>(
+                        @"INSERT INTO Car
+                        (AerodynamicCoefficent, PowerCoefficient, Weight, Model, PilotId)
+                        VALUES
+                        (@AerodynamicCoefficent, @PowerCoefficient, @Weight, @Model, @PilotId);
+                        SELECT CAST(SCOPE_IDENTITY() AS INT);",
+                        new
+                        {
+                            car.AerodynamicCoefficent,
+                            car.PowerCoefficient,
+                            car.Weight,
+                            car.Model,
+                            PilotId = pilotIds[i]
+                        },
+                        transaction
+                    );
+
+                    carIds.Add(carId);
+                }
+
+                //ENGINEERS
+                foreach (var engineer in dto.Engineers)
+                {
+                    await _connection.ExecuteAsync(
+                        @"INSERT INTO Engineer
+                        (Name, Surname, Age, Experience, Type, TeamId, CarId)
+                        VALUES
+                        (@Name, @Surname, @Age, @Experience, @Type, @TeamId, @CarId);",
+                        new
+                        {
+                            engineer.Name,
+                            engineer.Surname,
+                            engineer.Age,
+                            engineer.Experience,
+                            engineer.Type,
+                            TeamId = teamId,
+                            engineer.CarId
+                        },
+                        transaction
+                    );
+                }
+
+                //BOSSES
+                foreach (var boss in dto.Bosses)
+                {
+                    await _connection.ExecuteAsync(
+                        @"INSERT INTO Boss
+                        (Name, Surname, Age, Type, TeamId)
+                        VALUES
+                        (@Name, @Surname, @Age, @Type, @TeamId);",
+                        new
+                        {
+                            boss.Name,
+                            boss.Surname,
+                            boss.Age,
+                            boss.Type,
                             TeamId = teamId
                         },
                         transaction

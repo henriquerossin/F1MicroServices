@@ -1,4 +1,5 @@
-﻿using F1.RaceAPI.Services.Interfaces;
+﻿using F1.Models.DTOs.HistoryDTOs;
+using F1.RaceAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace F1.RaceAPI.Controllers
@@ -16,17 +17,51 @@ namespace F1.RaceAPI.Controllers
             _raceService = raceService;
         }
 
-        [HttpPost]
-        public async Task<IActionResult> PostHistoryAsync()
+        [HttpPost("Circuit/{idCircuit}/Event/{idEvent}")]
+        public async Task<IActionResult> PostHistoryAsync(int idCircuit, int idEvent)
         {
             try
             {
-                await _raceService.EventWorkerAsync();
+                await _raceService.ConsumeAndSaveHistoryAsync(idCircuit, idEvent);
                 return Ok();
             }
-            catch (Exception e)
+            catch (InvalidOperationException e)
             {
                 _logger.LogError(e, "Error while trying to start event worker.");
+                return BadRequest(e.Message);
+            }
+        }
+
+        [HttpPost("/Event/Publish")]
+        public async Task<IActionResult> PublicLastEventAsync()
+        {
+            try
+            {
+                await _raceService.PublishLastEventAsync();
+                return Ok();
+            }
+            catch (InvalidOperationException e)
+            {
+                _logger.LogWarning(e.Message);
+                return BadRequest(e.Message);
+            }
+        }
+
+        [HttpGet("Circuit/{idCircuit}/Event/{idEvent}")]
+        public async Task<ActionResult<FinalHistoryResponseDTO?>> GetOneFinalHistory(int idCircuit, int idEvent)
+        {
+            try
+            {
+                var history = await _raceService.GetOneFinalHistory(idCircuit, idEvent);
+
+                if (history is null)
+                    return NoContent();
+
+                return Ok(history);
+            }
+            catch (InvalidOperationException e)
+            {
+                _logger.LogError(e, "Error while trying to get History content.");
                 throw;
             }
         }

@@ -1,4 +1,5 @@
-﻿using F1.Models.DTOs.HistoryDTOs;
+﻿using F1.Models.DTOs.CompetitionDTOs;
+using F1.Models.DTOs.HistoryDTOs;
 using F1.RaceAPI.Repositories.Interfaces;
 using F1.RaceAPI.Services.Interfaces;
 using RabbitMQ.Client;
@@ -10,19 +11,25 @@ namespace F1.RaceAPI.Services
 {
     public class RaceService : IRaceService
     {
+        // TODO: Implement proper error handling and logging
         private readonly ILogger<RaceService> _logger;
+
         private readonly IRaceRepository _raceRepository;
+
+        private readonly HttpClient _clientCompetition;
+
         private int _currentEventType;
 
-        public RaceService(ILogger<RaceService> logger, IRaceRepository raceRepository)
+        public RaceService(ILogger<RaceService> logger, IRaceRepository raceRepository, HttpClient client)
         {
             _logger = logger;
             _raceRepository = raceRepository;
+            _clientCompetition = client;
         }
 
-        public List<HistoryDTO> historyList = new List<HistoryDTO>();
+        public List<HistoryDTO> historyList = [];
 
-        public async Task EventWorkerAsync()
+        public async Task ConsumeAndSaveHistoryAsync(int idRound, int idEvent)
         {
             // Conecting to RabbitMQ
             var factory = new ConnectionFactory { HostName = "localhost" };
@@ -60,6 +67,26 @@ namespace F1.RaceAPI.Services
                 _currentEventType = 1;
             }
 
+            // Validating the request before consuming the history queue
+            if (idEvent != _currentEventType)
+            {
+                throw new InvalidOperationException($"Invalid Race! The next race is {_currentEventType}");
+            }
+
+            var currentCircuit = await GetCircuitIdName();
+
+            if (currentCircuit is null || currentCircuit.Id != idRound)
+            {
+                throw new InvalidOperationException($"Wrong circuit! The next circuit is {currentCircuit}");
+            }
+
+            var endCircuitValidation = await _raceRepository.GetLastCircuitAsync(currentCircuit.Id);
+
+            if (endCircuitValidation is true)
+            {
+                throw new InvalidOperationException($"Wrong circuit! this circuit is already done");
+            }
+
             // Creating consumer
             var consumer = new AsyncEventingBasicConsumer(channel);
 
@@ -91,6 +118,8 @@ namespace F1.RaceAPI.Services
                     SecondEngineerCp = history.SecondEngineerCp,
                 };
 
+                var circuit = currentCircuit;
+
                 FinalHistoryResponseDTO finalEvent = null;
 
                 lock (historyList)
@@ -104,8 +133,11 @@ namespace F1.RaceAPI.Services
                             Id = MongoDB.Bson.ObjectId.GenerateNewId().ToString(),
                             CreatedAt = DateTime.UtcNow,
                             EventType = _currentEventType,
-
-                            // TODO: pick which Circuit are we racing on from Wayne API
+                            CompetitionId = new CompetitionHistoryResponseDTO
+                            {
+                                Id = circuit.Id,
+                                Name = circuit.Name
+                            },
 
                             HistoryList = historyList.ToList()
                         };
@@ -130,13 +162,6 @@ namespace F1.RaceAPI.Services
                 var attBody = Encoding.UTF8.GetBytes(
                     JsonSerializer.Serialize(mappedHistory)
                 );
-
-                // Publishing to AttHistory Queue
-                await channel.BasicPublishAsync(
-                    exchange: string.Empty,
-                    routingKey: "AttHistory",
-                    body: attBody
-                );
             };
 
             // Consuming the History Queue
@@ -145,6 +170,75 @@ namespace F1.RaceAPI.Services
                 autoAck: true,
                 consumer: consumer
             );
+        }
+
+        public async Task<FinalHistoryResponseDTO?> GetOneFinalHistory(int idCircuit, int idEvent)
+        {
+            try
+            {
+                return await _raceRepository.GetOneFinalHistory(idCircuit, idEvent);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Error while trying to get History document.");
+                throw;
+            }
+        }
+
+        public async Task PublishLastEventAsync()
+        {
+            // Getting last event from MongoDB
+            var lastEvent = await _raceRepository.GetLastEventAsync();
+
+            if (lastEvent is null)
+                throw new InvalidOperationException("No events found to publish");
+
+            // Conecting to RabbitMQ
+            var factory = new ConnectionFactory { HostName = "localhost" };
+
+            using var connection = await factory.CreateConnectionAsync();
+
+            using var channel = await connection.CreateChannelAsync();
+
+            // Declaring the AttHistory Queue
+            await channel.QueueDeclareAsync(
+                queue: "AttHistory",
+                durable: false,
+                exclusive: false,
+                autoDelete: false,
+                arguments: null
+            );
+
+            // Encoding Process
+            var body = Encoding.UTF8.GetBytes(
+                JsonSerializer.Serialize(lastEvent)
+            );
+
+            // Publishing to AttHistory Queue
+            await channel.BasicPublishAsync(
+                exchange: string.Empty,
+                routingKey: "AttHistory",
+                body: body
+            );
+        }
+
+        public async Task<CircuitHistoryIdNameResponseDTO?> GetCircuitIdName()
+        {
+            try
+            {
+                //var response = await _clientCompetition.GetAsync(_clientCompetition.BaseAddress + "GetCircuitIdName");
+                var response = await _clientCompetition.GetAsync("GetCircuitIdName");
+
+                var body = await response.Content.ReadAsStringAsync();
+
+                var finalBody = JsonSerializer.Deserialize<CircuitHistoryIdNameResponseDTO>(body);
+
+                return finalBody;
+            }
+            catch (Exception e)
+            {
+                throw new InvalidOperationException(e.Message);
+            }
         }
     }
 }

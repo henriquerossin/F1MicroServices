@@ -27,7 +27,6 @@ namespace F1.TeamAPI.Repositories
                         Age,
                         Experience,
                         Type,
-                        Status,
                         TeamId,
                         CarId
                     )
@@ -38,7 +37,6 @@ namespace F1.TeamAPI.Repositories
                         @Age,
                         @Experience,
                         @Type,
-                        @Status,
                         @TeamId,
                         @CarId
                     );
@@ -51,7 +49,6 @@ namespace F1.TeamAPI.Repositories
                     dto.Age,
                     dto.Experience,
                     dto.Type,
-                    dto.Status,
                     dto.TeamId,
                     dto.CarId
                 });
@@ -92,7 +89,6 @@ namespace F1.TeamAPI.Repositories
                         Age,
                         Experience,
                         Type,
-                        Status,
                         TeamId,
                         CarId
                     FROM Engineer
@@ -153,7 +149,6 @@ namespace F1.TeamAPI.Repositories
                         Age = @Age,
                         Experience = @Experience,
                         Type = @Type,
-                        Status = @Status,
                         TeamId = @TeamId,
                         CarId = @CarId
                     WHERE
@@ -169,7 +164,6 @@ namespace F1.TeamAPI.Repositories
                     dto.Age,
                     dto.Experience,
                     dto.Type,
-                    dto.Status,
                     dto.TeamId,
                     dto.CarId
                 });

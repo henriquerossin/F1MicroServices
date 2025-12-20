@@ -68,6 +68,10 @@ namespace F1.TeamAPI.Services
             await _teamRepo.CreateFullTeamAsync(dto);
         }
 
+        public async Task CreateFullTeamRandomAsync(CreateFullTeamRequestDTO dto)
+        {
+            await _teamRepo.CreateFullTeamRandomAsync(dto);
+        }
 
             public async Task<bool> ValidateTeamAsync()
             {

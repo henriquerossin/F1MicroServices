@@ -115,7 +115,6 @@ namespace F1.TeamAPI.Repositories
                         Surname = @Surname,
                         Age = @Age,
                         Type = @Type,
-                        Status = @Status,
                         TeamId = @TeamId
                     WHERE Id = @Id
                       AND IsActive = 1;
@@ -128,7 +127,6 @@ namespace F1.TeamAPI.Repositories
                     dto.Surname,
                     dto.Age,
                     dto.Type,
-                    dto.Status,
                     dto.TeamId
                 });
             }
