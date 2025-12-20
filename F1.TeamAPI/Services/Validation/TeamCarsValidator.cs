@@ -36,8 +36,8 @@ namespace F1.TeamAPI.Services.Validation
                     return false;
 
                 // Garantir vínculo com a equipe
-                if (car.TeamId != teamId)
-                    return false;
+                //if (car.TeamId != teamId)
+                //    return false;
             }
 
             // 3️⃣ Garantir que são dois carros distintos

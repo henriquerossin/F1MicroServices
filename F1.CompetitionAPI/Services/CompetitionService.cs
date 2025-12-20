@@ -66,15 +66,18 @@ namespace F1.CompetitionAPI.Services
 
         public async Task ConcludeCircuitAsync()
         {
-            //VER O QUE ACONTECE NA ULTIMA VEZ QUE FOR EXECUTAR ISSO
+            //AGORA ISSO NÃO QUEBRA QUANDO ESTIVER NO ULTIMO EVENTO
             try
             {
                 var circuit = await _repository.GetCircuitReadyAsync();
 
-                int round1 = circuit.Round;
-                int round2 = circuit.Round + 1;
+                if(circuit.Round is not 24)
+                {
+                    int round1 = circuit.Round;
+                    int round2 = circuit.Round + 1;
 
-                await _repository.ConcludeCircuitAsync(round1, round2);
+                    await _repository.ConcludeCircuitAsync(round1, round2);
+                }
             }
             catch (SqlException ex)
             {
@@ -335,8 +338,9 @@ namespace F1.CompetitionAPI.Services
                         {
                             //var circuits = await _repository.GetAllCircuitsActivesOrdenedAsync();
                             await _repository.StartTemp();
-                            await PostHistoryAsync();
+                            await Socorro();
 
+                            _ = PostHistoryAsync();
                         }
                     }
                 }
@@ -351,6 +355,13 @@ namespace F1.CompetitionAPI.Services
                 _logger.LogError(ex, " Error!");
                 throw;
             }
+        }
+
+        public async Task Socorro()
+        {
+            var client = _httpClientFactory.CreateClient("TeamClient");
+            await client.PostAsync("ProduceQueueHistory", null);
+            
         }
 
         public async Task PostHistoryAsync()

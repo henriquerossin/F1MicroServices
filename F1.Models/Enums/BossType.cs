@@ -2,7 +2,7 @@
 {
     public enum BossType
     {
-        BC = 1,
-        SC = 2
+        BB = 1,
+        SB = 2
     }
 }

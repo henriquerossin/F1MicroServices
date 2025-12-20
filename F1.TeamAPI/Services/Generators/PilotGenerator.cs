@@ -4,27 +4,36 @@ namespace F1.TeamAPI.Services.Generators
 {
     public class PilotGenerator
     {
-        public Faker faker = new Faker("pt_BR");
         private static Random r = new Random();
-        public string PilotName()
+        public static string PilotName()
         {
-            return faker.Name.FirstName();
+            var f = new Faker();
+            return f.Name.FirstName();
         }
-        public string PilotSurname()
+        public static string PilotSurname()
         {
-            return faker.Name.LastName();
+            var f = new Faker();
+            return f.Name.LastName();
         }
-        public decimal PilotWeight()
+        public static decimal PilotWeight()
         {
             return Math.Round(70.00m + (decimal)(r.NextDouble() * 20.00), 2);
         }
-        public int PilotIdentificationNumber()
+        public static int PilotIdentificationNumber()
         {
             return r.Next(1, 99);
         }
-        public int PilotAge()
+        public static int PilotAge()
         {
             return r.Next(20, 45);
+        }
+        public static decimal PilotExperience()
+        {
+            return Math.Round(1.000m + (decimal)(r.NextDouble() * 5.000), 3);
+        }
+        public static decimal PilotHandicap()
+        {
+            return Math.Round(50.00m + (decimal)(r.NextDouble() * 100.00), 2);
         }
     }
 }

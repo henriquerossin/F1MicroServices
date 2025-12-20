@@ -28,10 +28,10 @@ public class TeamBossesValidator
             return false;
 
         // Deve conter BC (1) e SC (2)
-        if (!types.Contains((int)BossType.BC))
+        if (!types.Contains((int)BossType.BB))
             return false;
 
-        if (!types.Contains((int)BossType.SC))
+        if (!types.Contains((int)BossType.SB))
             return false;
 
         return true;

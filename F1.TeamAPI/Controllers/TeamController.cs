@@ -1,12 +1,12 @@
-﻿using F1.TeamAPI.Services.Interfaces;
-using F1.TeamAPI.DTOs.TeamCreation;
+﻿using F1.TeamAPI.DTOs.TeamCreation;
 using F1.TeamAPI.Services.Interfaces;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace F1.TeamAPI.Controllers
 {
+    [Route("api/[controller]")]
     [ApiController]
-    [Route("team")]
     public class TeamController : ControllerBase
     {
         private readonly ILogger<TeamController> _logger;
@@ -25,10 +25,7 @@ namespace F1.TeamAPI.Controllers
             return Ok(isValid);
         }
 
-
-
-
-        [HttpPost("createFullManually")]
+        [HttpPost("createFullTeamManually")]
         public async Task<IActionResult> CreateFullTeam(
         [FromBody] CreateFullTeamRequestDTO dto)
         {
@@ -37,10 +34,17 @@ namespace F1.TeamAPI.Controllers
         }
 
 
+        [HttpPost("createFullTeamRandom")]
+        public async Task<IActionResult> CreateFullTeamRandom(CreateFullTeamRequestDTO dto)
+        {
+            await _teamService.CreateFullTeamRandomAsync(dto);
+            return Ok();
+        }
+
         [HttpPost("UpdateCurrentInfo")]
         public async Task<IActionResult> UpdatingCurrentInfoAsync()
         {
-            try
+            try 
             {
                 var finalConsumer = await _teamService.ConsumingQueue();
                 var finalUpdatingInfos = await _teamService.UpdatingCurrentInfo(finalConsumer);
@@ -67,6 +71,21 @@ namespace F1.TeamAPI.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "An error occurred while creating the history queue.");
+                return StatusCode(500, "Internal server error");
+            }
+        }
+
+        [HttpPost("ProduceQueueHistory")]
+        public async Task<IActionResult> ProduceQueueHistoryAsync()
+        {
+            try
+            {
+                await _teamService.GetAllHistoryAsync();
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while producing the history queue.");
                 return StatusCode(500, "Internal server error");
             }
         }

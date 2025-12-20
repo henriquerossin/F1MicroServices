@@ -14,6 +14,10 @@ builder.Services.Configure<MongoDBSettings>(builder.Configuration.GetSection("Mo
 
 builder.Services.AddSingleton<ConnectionDB>();
 
+builder.Services.AddHttpClient("EngineeringClient", client => { client.BaseAddress = new Uri("https://localhost:6001/api/Engineering/"); });
+
+builder.Services.AddHttpClient("CompetitionClient", client => { client.BaseAddress = new Uri("https://localhost:5001/api/Competition/"); });
+
 builder.Services.AddSingleton<IRaceService, RaceService>();
 
 builder.Services.AddSingleton<IRaceRepository, RaceRepository>();

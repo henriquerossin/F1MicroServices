@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using F1.Models.DTOs.TeamDTOs.EngineerDTOs;
+using F1.Models.DTOs.TeamDTOs.PilotDTOs;
 using F1.TeamAPI.Data;
 using F1.TeamAPI.Repositories.Interfaces;
 using Microsoft.Data.SqlClient;
@@ -9,10 +10,12 @@ namespace F1.TeamAPI.Repositories
     public class EngineerRepository : IEngineerRepository
     {
         private readonly SqlConnection _connection;
+        private readonly ILogger<EngineerRepository> _logger;
 
-        public EngineerRepository(ConnectionDB c)
+        public EngineerRepository(ConnectionDB c, ILogger<EngineerRepository> logger)
         {
             _connection = c.GetSlqConnection();
+            _logger = logger;
         }
 
         public async Task CreateEngineerAsync(EngineerRequestDTO dto)
@@ -27,7 +30,6 @@ namespace F1.TeamAPI.Repositories
                         Age,
                         Experience,
                         Type,
-                        Status,
                         TeamId,
                         CarId
                     )
@@ -38,7 +40,6 @@ namespace F1.TeamAPI.Repositories
                         @Age,
                         @Experience,
                         @Type,
-                        @Status,
                         @TeamId,
                         @CarId
                     );
@@ -51,7 +52,6 @@ namespace F1.TeamAPI.Repositories
                     dto.Age,
                     dto.Experience,
                     dto.Type,
-                    dto.Status,
                     dto.TeamId,
                     dto.CarId
                 });
@@ -92,7 +92,6 @@ namespace F1.TeamAPI.Repositories
                         Age,
                         Experience,
                         Type,
-                        Status,
                         TeamId,
                         CarId
                     FROM Engineer
@@ -119,7 +118,7 @@ namespace F1.TeamAPI.Repositories
                         e.Age,
                         e.Experience,
                         e.Type,
-                        e.Status,
+                        e.IsActive,
                         e.TeamId,
                         e.CarId
                     FROM Engineer e
@@ -153,7 +152,6 @@ namespace F1.TeamAPI.Repositories
                         Age = @Age,
                         Experience = @Experience,
                         Type = @Type,
-                        Status = @Status,
                         TeamId = @TeamId,
                         CarId = @CarId
                     WHERE
@@ -169,7 +167,6 @@ namespace F1.TeamAPI.Repositories
                     dto.Age,
                     dto.Experience,
                     dto.Type,
-                    dto.Status,
                     dto.TeamId,
                     dto.CarId
                 });
@@ -177,6 +174,26 @@ namespace F1.TeamAPI.Repositories
             catch (Exception ex)
             {
                 throw new Exception("Erro ao atualizar engenheiro: " + ex.Message);
+            }
+        }
+
+        public async Task<List<EngineerHistoryResponseDTO>> GetAllEngineersHistoryAsync()
+        {
+            try
+            {
+                var sql = @"
+            SELECT Id, Experience, Type, TeamId
+            FROM Engineer";
+
+                var engineers = await _connection
+                    .QueryAsync<EngineerHistoryResponseDTO>(sql);
+
+                return engineers.ToList();
+            }
+            catch (SqlException e)
+            {
+                _logger.LogError(e, "SQL Error while retrieving engineers history");
+                throw;
             }
         }
     }

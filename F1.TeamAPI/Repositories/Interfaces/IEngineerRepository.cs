@@ -9,6 +9,6 @@ namespace F1.TeamAPI.Repositories.Interfaces
         Task CreateEngineerAsync(EngineerRequestDTO dto);
         Task UpdateEngineerAsync(int id, EngineerRequestDTO dto);
         Task DeleteEngineerAsync(int id);
+        Task<List<EngineerHistoryResponseDTO>> GetAllEngineersHistoryAsync();
     }
-
 }

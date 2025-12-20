@@ -12,6 +12,8 @@ namespace F1.TeamAPI.Repositories.Interfaces
 
         Task UpdateTeamPlacementAndPointsAsync(int teamId, int placement, int points);
         Task CreateFullTeamAsync(CreateFullTeamRequestDTO dto);
+        Task CreateFullTeamRandomAsync(CreateFullTeamRequestDTO dto);
         Task<List<TeamResponseDTO>> GetAllTeamsFinalAsync();
+        Task<List<TeamHistoryResponseDTO>> GetAllTeamsHistoryAsync();
     }
 }

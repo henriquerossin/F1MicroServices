@@ -23,20 +23,56 @@ namespace F1.RaceAPI.Repositories
                 await _collection.InsertOneAsync(history);
                 _logger.LogInformation("History event saved successfully.");
             }
-            catch (Exception ex)
+            catch (MongoException e)
             {
-                _logger.LogError(ex, "Error saving history event.");
+                _logger.LogError(e, "Error while trying to access MongoDB");
+                throw;
+            }
+        }
+
+        public async Task<FinalHistoryResponseDTO?> GetOneFinalHistory(int idCircuit, int idEvent)
+        {
+            try
+            {
+                return await _collection
+                    .Find(x => x.CompetitionId.Id == idCircuit && x.EventType == idEvent)
+                    .FirstOrDefaultAsync();
+            }
+            catch (MongoException e)
+            {
+                _logger.LogError(e, "Error while trying to access Mongo");
                 throw;
             }
         }
 
         public async Task<FinalHistoryResponseDTO> GetLastEventAsync()
         {
-            return await _collection
-            .Find(FilterDefinition<FinalHistoryResponseDTO>.Empty)
-            .SortByDescending(x => x.CreatedAt)
-            .Limit(1)
-            .FirstOrDefaultAsync();
+            try
+            {
+                return await _collection
+                    .Find(FilterDefinition<FinalHistoryResponseDTO>.Empty)
+                    .SortByDescending(x => x.CreatedAt)
+                    .Limit(1)
+                    .FirstOrDefaultAsync();
+            }
+            catch (MongoException e)
+            {
+                _logger.LogError(e, "Error while trying to access Mongo");
+                throw;
+            }
+        }
+
+        public async Task<bool> GetLastCircuitAsync(int idCircuit)
+        {
+            bool validation;
+
+            var filter = Builders<FinalHistoryResponseDTO>
+                .Filter.And(Builders<FinalHistoryResponseDTO>
+                .Filter.Eq(x => x.CompetitionId.Id, idCircuit), Builders<FinalHistoryResponseDTO>
+                .Filter.Eq(x => x.EventType, 5)
+            );
+
+            return await _collection.Find(filter).AnyAsync();
         }
     }
 }

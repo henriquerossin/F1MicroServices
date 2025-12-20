@@ -6,5 +6,7 @@
         public int CarModel { get; init; }
         public decimal CarAerodynamicCoefficent { get; init; }
         public decimal CarPowerCoefficient { get; init; }
+        public int PilotId { get; init; }
+        public int TeamId { get; init; }
     }
 }
