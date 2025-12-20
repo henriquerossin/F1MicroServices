@@ -4,25 +4,28 @@ namespace F1.TeamAPI.Services.Generators
 {
     public class CPEngineerGenerator
     {
-        public Faker f = new Faker("pt_BR");
+        
         private static Random r = new Random();
-        public string CPEngineerName()
+        public static string CPEngineerName()
         {
+            var f = new Faker("pt_BR");
             return f.Name.FirstName();
         }
-        public string CPEngineerSurname()
+        public static string CPEngineerSurname()
         {
+            var f = new Faker("pt_BR");
+
             return f.Name.LastName();
         }
-        public int CPEngineerAge()
+        public static int CPEngineerAge()
         {
             return r.Next(20, 45);
         }
-        public decimal CPEngineerExperience()
+        public static decimal CPEngineerExperience()
         {
             return Math.Round(1.000m + (decimal)(r.NextDouble() * 5.000), 3);
         }
-        public string CPEngineerType()
+        public static string CPEngineerType()
         {
             return "CP";
         }

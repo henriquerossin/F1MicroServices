@@ -4,21 +4,21 @@ namespace F1.TeamAPI.Services.Generators
 {
     public class BigBossGerenator
     {
-        public Faker f = new Faker("pt_BR");
-        public Random r = new Random();
-        public string BigBossName()
+        public static Faker f = new Faker("pt_BR");
+        public static Random r = new Random();
+        public static string BigBossName()
         {
             return f.Name.FirstName();
         }
-        public string BigBossSurname()
+        public static string BigBossSurname()
         {
             return f.Name.LastName();
         }
-        public int BigBossAge()
+        public static int BigBossAge()
         {
             return r.Next(20, 45);
         }
-        public string BigBossType()
+        public static string BigBossType()
         {
             return "BB";
         }
