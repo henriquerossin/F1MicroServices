@@ -162,36 +162,6 @@ namespace F1.TeamAPI.Services
             return newListCurrentInfo;
         }
 
-        //public async Task ProduceQueueAsync(HistoryDTO history)
-        //{
-        //    try
-        //    {
-        //        var factory = new ConnectionFactory() { HostName = "localhost" };
-        //        using var connection = await factory.CreateConnectionAsync();
-        //        using var producerChannel = await connection.CreateChannelAsync();
-
-        //        await producerChannel.QueueDeclareAsync(queue: "History",
-        //                                         durable: false,
-        //                                         exclusive: false,
-        //                                         autoDelete: false,
-        //                                         arguments: null);
-
-        //        var message = JsonSerializer.Serialize(history);
-        //        var body = Encoding.UTF8.GetBytes(message);
-
-        //        await producerChannel.BasicPublishAsync(exchange: string.Empty,
-        //                                         routingKey: "History",
-        //                                         body: body);
-
-        //        await _clientRace.PostAsync(_clientRace.BaseAddress + "Circuit/1/Event/1", null);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError(ex, "An error occurred while updating the current event information.");
-        //        throw;
-        //    }
-        //}
-
         public async Task ProduceQueueAsync(HistoryDTO history) // socorro()
         {
             try
