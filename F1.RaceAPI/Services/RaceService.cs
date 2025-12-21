@@ -203,8 +203,7 @@ namespace F1.RaceAPI.Services
             );
 
             // Encoding Process
-            var body = Encoding.UTF8.GetBytes(
-                JsonSerializer.Serialize(lastEvent)
+            var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(lastEvent)
             );
 
             // Publishing to AttHistory Queue
@@ -214,7 +213,7 @@ namespace F1.RaceAPI.Services
                 body: body
             );
 
-            await UpdateInfosForEvent();
+            //await UpdateInfosForEvent();
         }
 
         public async Task<CircuitHistoryIdNameResponseDTO> GetCircuitIdName()

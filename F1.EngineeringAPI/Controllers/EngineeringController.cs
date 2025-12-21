@@ -25,13 +25,13 @@ namespace F1.EngineeringAPI.Controllers
                 var finalConsumer = await _engineeringService.ConsumingQueueAsync();
                 var finalUpdatingInfos = await _engineeringService.UpdatingInfosForEventsAsync(finalConsumer);
                 var listPlacement = await _engineeringService.UpdatePlacementAsync(finalUpdatingInfos);
-                //aqui faz um que var ir um por um da ultima e passar pra producer
+                //aqui faz um que vai ir um por um da ultima e passar pra producer
                 foreach (var h in listPlacement)
                 {
                     await _engineeringService.ProduceQueueAsync(h);
                 }
 
-                await _engineeringService.NotifyTeamApiToUpdate();
+                //await _engineeringService.NotifyTeamApiToUpdate();
                 return Ok();
             }
             catch (Exception ex)

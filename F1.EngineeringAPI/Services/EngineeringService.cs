@@ -20,7 +20,6 @@ namespace F1.EngineeringAPI.Services
             _httpClientFactory = httpClientFactory;
         }
 
-
         public async Task<FinalHistoryResponseDTO> ConsumingQueueAsync(CancellationToken cancellationToken = default)
         {
             var listHistories = new FinalHistoryResponseDTO().HistoryList;
@@ -123,14 +122,16 @@ namespace F1.EngineeringAPI.Services
                         PilotHandicap = newHandicapFirstPilot,
                         PilotPoints = info.FirstPilot.PilotPoints,
                         PilotPlacement = info.FirstPilot.PilotPlacement,
-                        Experience = info.FirstPilot.Experience
+                        Experience = info.FirstPilot.Experience,
+                        TeamId = info.Team.TeamId
                     },
                     FirstCar = new CarHistoryResponseDTO
                     {
                         CarId = info.FirstCar.CarId,
                         CarAerodynamicCoefficent = newCaFirstCar,
                         CarPowerCoefficient = newCpFirstCar,
-                        CarModel = info.FirstCar.CarModel
+                        CarModel = info.FirstCar.CarModel,
+                        PilotId = info.FirstPilot.PilotId
                     },
                     FirstEngineerCa = info.FirstEngineerCa,
                     FirstEngineerCp = info.FirstEngineerCp,
@@ -141,14 +142,16 @@ namespace F1.EngineeringAPI.Services
                         PilotHandicap = newHandicapSecondPilot,
                         PilotPoints = info.SecondPilot.PilotPoints,
                         PilotPlacement = info.SecondPilot.PilotPlacement,
-                        Experience = info.SecondPilot.Experience
+                        Experience = info.SecondPilot.Experience,
+                        TeamId = info.Team.TeamId
                     },
                     SecondCar = new CarHistoryResponseDTO
                     {
                         CarId = info.SecondCar.CarId,
                         CarAerodynamicCoefficent = newCaSecondCar,
                         CarPowerCoefficient = newCpSecondCar,
-                        CarModel = info.SecondCar.CarModel
+                        CarModel = info.SecondCar.CarModel,
+                        PilotId = info.SecondPilot.PilotId
                     },
                     SecondEngineerCa = info.SecondEngineerCa,
                     SecondEngineerCp = info.SecondEngineerCp,
@@ -312,19 +315,19 @@ namespace F1.EngineeringAPI.Services
             try
             {
                 //vou ver se funciona com isso comentado
-                //var newInfo = new HistoryDTO
-                //{
-                //    Team = history.Team,
-                //    FirstPilot = history.FirstPilot,
-                //    FirstCar = history.FirstCar,
-                //    FirstEngineerCa = history.FirstEngineerCa,
-                //    FirstEngineerCp = history.FirstEngineerCp,
-                //    SecondPilot = history.SecondPilot,
-                //    SecondCar = history.SecondCar,
-                //    SecondEngineerCa = history.SecondEngineerCa,
-                //    SecondEngineerCp = history.SecondEngineerCp,
-                //    EventType = history.EventType
-                //};
+                var newInfo = new HistoryDTO
+                {
+                    Team = history.Team,
+                    FirstPilot = history.FirstPilot,
+                    FirstCar = history.FirstCar,
+                    FirstEngineerCa = history.FirstEngineerCa,
+                    FirstEngineerCp = history.FirstEngineerCp,
+                    SecondPilot = history.SecondPilot,
+                    SecondCar = history.SecondCar,
+                    SecondEngineerCa = history.SecondEngineerCa,
+                    SecondEngineerCp = history.SecondEngineerCp
+                    //EventType = history.EventType
+                };
 
                 var factory = new ConnectionFactory() { HostName = "localhost" };
                 using var connection = await factory.CreateConnectionAsync();
@@ -336,7 +339,7 @@ namespace F1.EngineeringAPI.Services
                                                  autoDelete: false,
                                                  arguments: null);
 
-                var message = JsonSerializer.Serialize(history);
+                var message = JsonSerializer.Serialize(newInfo);
                 var body = Encoding.UTF8.GetBytes(message);
 
                 await producerChannel.BasicPublishAsync(exchange: string.Empty,
