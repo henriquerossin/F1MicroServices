@@ -109,8 +109,8 @@ namespace F1.TeamAPI.Controllers
         {
             try
             {
-                await _teamService.GetAllPilotsFinal();
-                return Ok();
+                var pilots = await _teamService.GetAllPilotsFinal();
+                return Ok(pilots);
             } catch (Exception ex)
             {
                 _logger.LogError(ex, "An error occurred while geting the pilot list.");
@@ -123,8 +123,8 @@ namespace F1.TeamAPI.Controllers
         {
             try
             {
-                await _teamService.GetAllTeamsFinal();
-                return Ok();
+                var teams = await _teamService.GetAllTeamsFinal();
+                return Ok(teams);
             }catch (Exception ex)
             {
                 _logger.LogError(ex, "An error occurred while geting the team list.");

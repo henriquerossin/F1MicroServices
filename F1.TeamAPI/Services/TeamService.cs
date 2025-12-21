@@ -394,10 +394,12 @@ namespace F1.TeamAPI.Services
            var pilots = await _pilotRepo.GetAllPilotsFinalAsync();
             return pilots;
         }
-        public async Task<List<TeamResponseDTO>> GetAllTeamsFinalAsync()
+        public async Task<List<TeamResponseDTO>> GetAllTeamsFinal()
         {
             var teams = await _teamRepo.GetAllTeamsFinalAsync();
             return teams;
         }
+
+
     }
 }
