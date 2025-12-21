@@ -1,7 +1,5 @@
 ﻿using F1.CompetitionAPI.Services.Interfaces;
 using F1.Models.DTOs.CompetitionDTOs;
-using F1.Models.TeamModels;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 

@@ -1,6 +1,5 @@
 ﻿using F1.TeamAPI.DTOs.TeamCreation;
 using F1.TeamAPI.Services.Interfaces;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace F1.TeamAPI.Controllers
@@ -62,10 +61,12 @@ namespace F1.TeamAPI.Controllers
             {
                 var finalConsumer = await _teamService.ConsumingQueue();
                 var finalUpdatingInfos = await _teamService.UpdatingCurrentInfo(finalConsumer);
+
                 foreach (var h in finalUpdatingInfos)
                 {
                     await _teamService.ProduceQueueAsync(h);
                 }
+
                 return Ok();
             }
             catch (Exception ex)

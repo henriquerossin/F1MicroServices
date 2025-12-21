@@ -193,6 +193,8 @@ namespace F1.TeamAPI.Services
             await consumerChannel.CloseAsync();
             await connection.CloseAsync();
 
+            await GetAllHistoryAsync();
+
             return listInfo;
         }
 
@@ -217,6 +219,8 @@ namespace F1.TeamAPI.Services
 
                 newListCurrentInfo.Add(item);
             }
+
+
             return newListCurrentInfo;
         }
 
