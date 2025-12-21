@@ -216,7 +216,7 @@ namespace F1.TeamAPI.Repositories
         public async Task<List<PilotHistoryResponseDTO>> GetAllPilotsHistoryAsync()
         {
             var sql =
-                @"SELECT Id, Name, Handicap, Points, Position, Experience, TeamId
+                @"SELECT Id as PilotId, Name as PilotName, Handicap as PilotHandicap, Points as PilotPoints, Position as PilotPlacement, Experience, TeamId
                 FROM Pilot";
 
             var pilots = await _connection.QueryAsync<PilotHistoryResponseDTO>(sql);

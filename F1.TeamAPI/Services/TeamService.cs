@@ -90,52 +90,110 @@ namespace F1.TeamAPI.Services
             return true;
         }
 
+        //public async Task<List<HistoryDTO>> ConsumingQueue()
+        //{
+        //    var listInfo = new List<HistoryDTO>();
+
+        //    try
+        //    {
+        //        var factory = new ConnectionFactory { HostName = "localhost" };
+        //        using var connection = await factory.CreateConnectionAsync();
+        //        using var consumerChannel = await connection.CreateChannelAsync();
+
+        //        await consumerChannel.QueueDeclareAsync(queue: "UpdateHistory",
+        //                                         durable: true,
+        //                                         exclusive: false,
+        //                                         autoDelete: false,
+        //                                         arguments: null);
+
+        //        var consumer = new AsyncEventingBasicConsumer(consumerChannel);
+
+        //        consumer.ReceivedAsync += async (model, ea) =>
+        //        {
+        //            var body = ea.Body.ToArray();
+        //            var message = System.Text.Encoding.UTF8.GetString(body);
+        //            var historyDto = JsonSerializer.Deserialize<HistoryDTO>(message);
+
+        //            if (historyDto != null)
+        //            {
+        //                lock (listInfo)
+        //                {
+        //                    listInfo.Add(historyDto);
+        //                }
+        //            }
+
+        //            await consumerChannel.BasicAckAsync(ea.DeliveryTag, false);
+        //        };
+
+        //        await consumerChannel.BasicConsumeAsync(queue: "UpdateHistory",
+        //                                         autoAck: false,
+        //                                         consumer: consumer);
+
+        //        await UpdatingCurrentInfo(listInfo);
+
+        //        return listInfo;
+
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, "An error occurred while updating the current event information.");
+        //        throw;
+        //    }
+        //}
+
         public async Task<List<HistoryDTO>> ConsumingQueue()
         {
             var listInfo = new List<HistoryDTO>();
+            var tcs = new TaskCompletionSource<bool>(
+                TaskCreationOptions.RunContinuationsAsynchronously);
 
-            try
+            var factory = new ConnectionFactory { HostName = "localhost" };
+            var connection = await factory.CreateConnectionAsync();
+            var consumerChannel = await connection.CreateChannelAsync();
+
+            await consumerChannel.QueueDeclareAsync(
+                queue: "UpdateHistory",
+                durable: true,
+                exclusive: false,
+                autoDelete: false,
+                arguments: null);
+
+            var consumer = new AsyncEventingBasicConsumer(consumerChannel);
+
+            consumer.ReceivedAsync += async (_, ea) =>
             {
-                var factory = new ConnectionFactory { HostName = "localhost" };
-                using var connection = await factory.CreateConnectionAsync();
-                using var consumerChannel = await connection.CreateChannelAsync();
-
-                await consumerChannel.QueueDeclareAsync(queue: "UpdateHistory",
-                                                 durable: true,
-                                                 exclusive: false,
-                                                 autoDelete: false,
-                                                 arguments: null);
-
-                var consumer = new AsyncEventingBasicConsumer(consumerChannel);
-
-                consumer.ReceivedAsync += async (model, ea) =>
+                try
                 {
-                    var body = ea.Body.ToArray();
-                    var message = System.Text.Encoding.UTF8.GetString(body);
-                    var historyDto = JsonSerializer.Deserialize<HistoryDTO>(message);
+                    var message = Encoding.UTF8.GetString(ea.Body.ToArray());
+                    var history = JsonSerializer.Deserialize<HistoryDTO>(message);
 
-                    if (historyDto != null)
-                    {
-                        lock (listInfo)
-                        {
-                            listInfo.Add(historyDto);
-                        }
-                    }
+                    if (history != null)
+                        listInfo.Add(history);
 
                     await consumerChannel.BasicAckAsync(ea.DeliveryTag, false);
-                };
 
-                await consumerChannel.BasicConsumeAsync(queue: "UpdateHistory",
-                                                 autoAck: false,
-                                                 consumer: consumer);
+                    tcs.TrySetResult(true);
+                }
+                catch (Exception ex)
+                {
+                    tcs.TrySetException(ex);
+                }
+            };
 
-                return listInfo;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "An error occurred while updating the current event information.");
-                throw;
-            }
+            var tag = await consumerChannel.BasicConsumeAsync(
+                queue: "UpdateHistory",
+                autoAck: false,
+                consumer: consumer);
+
+            await tcs.Task;
+
+            await UpdatingCurrentInfo(listInfo.ToList());
+
+            await consumerChannel.BasicCancelAsync(tag);
+            await consumerChannel.CloseAsync();
+            await connection.CloseAsync();
+
+            return listInfo;
         }
 
         public async Task<List<HistoryDTO>> UpdatingCurrentInfo(List<HistoryDTO> listCurrentInfo)
@@ -161,36 +219,6 @@ namespace F1.TeamAPI.Services
             }
             return newListCurrentInfo;
         }
-
-        //public async Task ProduceQueueAsync(HistoryDTO history)
-        //{
-        //    try
-        //    {
-        //        var factory = new ConnectionFactory() { HostName = "localhost" };
-        //        using var connection = await factory.CreateConnectionAsync();
-        //        using var producerChannel = await connection.CreateChannelAsync();
-
-        //        await producerChannel.QueueDeclareAsync(queue: "History",
-        //                                         durable: false,
-        //                                         exclusive: false,
-        //                                         autoDelete: false,
-        //                                         arguments: null);
-
-        //        var message = JsonSerializer.Serialize(history);
-        //        var body = Encoding.UTF8.GetBytes(message);
-
-        //        await producerChannel.BasicPublishAsync(exchange: string.Empty,
-        //                                         routingKey: "History",
-        //                                         body: body);
-
-        //        await _clientRace.PostAsync(_clientRace.BaseAddress + "Circuit/1/Event/1", null);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError(ex, "An error occurred while updating the current event information.");
-        //        throw;
-        //    }
-        //}
 
         public async Task ProduceQueueAsync(HistoryDTO history) // socorro()
         {
@@ -233,10 +261,8 @@ namespace F1.TeamAPI.Services
                 await connection.CloseAsync();
 
                 _logger.LogInformation("Mensagem enviada para a fila History");
-                //await _clientRace.PostAsync("Circuit/1/Event/1", null);
 
-                var client = _httpClientFactory.CreateClient("RaceAPI");
-                //await client.PostAsync("Circuit/1/Event/1", null);
+                //await GetAllHistoryAsync();
             }
             catch (Exception ex)
             {
@@ -308,13 +334,13 @@ namespace F1.TeamAPI.Services
                 var firstPilot = teamPilots.ElementAtOrDefault(0);
                 var secondPilot = teamPilots.ElementAtOrDefault(1);
 
-                // Cars vinculados aos pilotos
+                //Cars vinculados aos pilotos
                 var firstCar = firstPilot is null
                     ? null
                     : cars.FirstOrDefault(c => c.PilotId == firstPilot.PilotId);
 
-                var secondCar = secondPilot is null
-                    ? null
+                var secondCar = secondPilot is null 
+                    ? null 
                     : cars.FirstOrDefault(c => c.PilotId == secondPilot.PilotId);
 
                 // Engineers do time
@@ -356,6 +382,7 @@ namespace F1.TeamAPI.Services
             {
                 await ProduceQueueAsync(history);
             }
+
 
             return histories;
         }

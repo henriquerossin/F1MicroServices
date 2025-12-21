@@ -6,11 +6,14 @@ using F1.TeamAPI.DTOs.TeamCreation;
 using F1.TeamAPI.Repositories.Interfaces;
 using F1.TeamAPI.Services.Generators;
 using Microsoft.Data.SqlClient;
+using System;
 
 namespace F1.TeamAPI.Repositories
 {
     public class TeamRepository : ITeamRepository
     {
+
+        Random random = new Random();
         public readonly SqlConnection _connection;
         public readonly ILogger<TeamRepository> _logger;
 
@@ -141,8 +144,21 @@ namespace F1.TeamAPI.Repositories
                             pilot.Weight,
                             pilot.Age,
                             pilot.IdentificationNumber,
-                            pilot.Experience,
-                            pilot.Handicap,
+
+                            //Experience = (decimal)(random.NextDouble() * (5 - 1) + 1),
+
+                            Experience = Math.Round(
+                                (decimal)
+                                (random.NextDouble() * (5 - 1) + 1), 3,
+                                MidpointRounding.AwayFromZero),
+
+                            //Handicap = (decimal)(random.NextDouble() * (100 - 50) + 50),
+
+                            Handicap = Math.Round(
+                                (decimal)
+                                (random.NextDouble() * (100 - 50) + 50), 2,
+                                MidpointRounding.AwayFromZero),
+
                             TeamId = teamId
                         },
                         transaction
@@ -166,8 +182,16 @@ namespace F1.TeamAPI.Repositories
                         SELECT CAST(SCOPE_IDENTITY() AS INT);",
                         new
                         {
-                            car.AerodynamicCoefficent,
-                            car.PowerCoefficient,
+                            AerodynamicCoefficent = Math.Round(
+                                (decimal)
+                                (random.NextDouble() * (10 - 0) + 0), 3,
+                                MidpointRounding.AwayFromZero),
+
+                            PowerCoefficient = Math.Round(
+                                (decimal)
+                                (random.NextDouble() * (10 - 0) + 0), 3,
+                                MidpointRounding.AwayFromZero),
+
                             car.Weight,
                             car.Model,
                             PilotId = pilotIds[i]
@@ -246,7 +270,13 @@ namespace F1.TeamAPI.Repositories
                             engineer.Name,
                             engineer.Surname,
                             engineer.Age,
-                            engineer.Experience,
+                            //engineer.Experience,
+
+                            Experience = Math.Round(
+                                (decimal)
+                                (random.NextDouble() * (5 - 1) + 1), 3,
+                                MidpointRounding.AwayFromZero),
+
                             engineer.Type,
                             TeamId = teamId,
                             CarId = carId
