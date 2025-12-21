@@ -333,7 +333,8 @@ namespace F1.CompetitionAPI.Services
                         {
                             //var circuits = await _repository.GetAllCircuitsActivesOrdenedAsync();
                             await _repository.StartTemp();
-                            await CallingProduceQueueHistoryAsync();
+
+                            await Socorro();
 
                             //_ = PostHistoryAsync();
                         }

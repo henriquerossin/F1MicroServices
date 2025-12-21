@@ -1,12 +1,10 @@
 ﻿using Dapper;
-using F1.Models.DTOs.HistoryDTOs;
 using F1.Models.DTOs.TeamDTOs.TeamDTOs;
 using F1.TeamAPI.Data;
 using F1.TeamAPI.DTOs.TeamCreation;
 using F1.TeamAPI.Repositories.Interfaces;
 using F1.TeamAPI.Services.Generators;
 using Microsoft.Data.SqlClient;
-using System;
 
 namespace F1.TeamAPI.Repositories
 {
@@ -186,6 +184,7 @@ namespace F1.TeamAPI.Repositories
                     );
                     carIds.Add(carId);
                 }
+
                 // ENGINEERS
                 for (int i = 0; i < dto.Engineers.Count; i++)
                 {
@@ -435,9 +434,6 @@ namespace F1.TeamAPI.Repositories
                             transaction
                             );
                 }
-
-
-
                 transaction.Commit();
             }
             catch

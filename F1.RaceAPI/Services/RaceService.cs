@@ -165,6 +165,15 @@ namespace F1.RaceAPI.Services
             await Task.Delay(1500);
 
             await PublishLastEventAsync();
+
+            await UpdateInfosForEvent();
+
+            await ConsumingAndUpdateAsync();
+
+            await channel.CloseAsync();
+            await connection.CloseAsync();
+
+            await ProduceQueueHistory();
         }
 
         public async Task<FinalHistoryResponseDTO?> GetOneFinalHistory(int idCircuit, int idEvent)
@@ -215,7 +224,6 @@ namespace F1.RaceAPI.Services
                 body: body
             );
 
-            await UpdateInfosForEvent();
         }
 
         public async Task<CircuitHistoryIdNameResponseDTO> GetCircuitIdName()
@@ -258,6 +266,34 @@ namespace F1.RaceAPI.Services
                 var client = _httpClientFactory.CreateClient("EngineeringClient");
 
                 await client.PutAsync("Engineering", null);
+            }
+            catch (Exception e)
+            {
+                throw new InvalidOperationException(e.Message);
+            }
+        }
+
+        public async Task ConsumingAndUpdateAsync()
+        {
+            try
+            {
+                var client = _httpClientFactory.CreateClient("TeamClient");
+
+                await client.PostAsync("ConsumingUpdateHistoryQueue", null);
+            }
+            catch (Exception e)
+            {
+                throw new InvalidOperationException(e.Message);
+            }
+        }
+
+        public async Task ProduceQueueHistory()
+        {
+            try
+            {
+                var client = _httpClientFactory.CreateClient("TeamClient");
+
+                await client.PostAsync("ProduceQueueHistory", null);
             }
             catch (Exception e)
             {

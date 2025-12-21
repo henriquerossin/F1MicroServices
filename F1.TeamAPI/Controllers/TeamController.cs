@@ -46,8 +46,7 @@ namespace F1.TeamAPI.Controllers
                 throw;
             }
         }
-
-
+        
         [HttpPost("createFullTeamRandom")]
         public async Task<IActionResult> CreateFullTeamRandom(CreateFullTeamRequestDTO dto)
         {

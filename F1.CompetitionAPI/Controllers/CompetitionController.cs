@@ -9,7 +9,6 @@ namespace F1.CompetitionAPI.Controllers
     [ApiController]
     public class CompetitionController : ControllerBase
     {
-
         private readonly ILogger<CompetitionController> _logger;
         private readonly ICompetitionService _service;
 

@@ -14,6 +14,7 @@ namespace F1.EngineeringAPI.Services
     {
         private readonly ILogger<EngineeringService> _logger;
         private readonly IHttpClientFactory _httpClientFactory;
+
         public EngineeringService(ILogger<EngineeringService> logger, IHttpClientFactory httpClientFactory)
         {
             _logger = logger;
