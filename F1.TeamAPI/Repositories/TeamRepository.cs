@@ -6,6 +6,7 @@ using F1.TeamAPI.DTOs.TeamCreation;
 using F1.TeamAPI.Repositories.Interfaces;
 using F1.TeamAPI.Services.Generators;
 using Microsoft.Data.SqlClient;
+using System;
 
 namespace F1.TeamAPI.Repositories
 {
@@ -106,6 +107,7 @@ namespace F1.TeamAPI.Repositories
             });
         }
 
+        private static readonly Random random = new Random();
         public async Task CreateFullTeamAsync(CreateFullTeamRequestDTO dto)
         {
             await _connection.OpenAsync();
@@ -115,25 +117,23 @@ namespace F1.TeamAPI.Repositories
                 //TEAM
                 var teamId = await _connection.ExecuteScalarAsync<int>(
                     @"INSERT INTO Team (Name)
-                      VALUES (@Name);
-                      SELECT CAST(SCOPE_IDENTITY() AS INT);",
+              VALUES (@Name);
+              SELECT CAST(SCOPE_IDENTITY() AS INT);",
                     new { dto.Team.Name },
                     transaction
                 );
-
                 //PILOTS
                 var pilotIds = new List<int>();
-
                 foreach (var pilot in dto.Pilots)
                 {
                     var pilotId = await _connection.ExecuteScalarAsync<int>(
                         @"INSERT INTO Pilot
-                        (Name, Surname, Weight, Age, IdentificationNumber,
-                         Experience, Handicap, TeamId)
-                        VALUES
-                        (@Name, @Surname, @Weight, @Age, @IdentificationNumber, 
-                         @Experience, @Handicap, @TeamId);
-                        SELECT CAST(SCOPE_IDENTITY() AS INT);",
+                (Name, Surname, Weight, Age, IdentificationNumber,
+                 Experience, Handicap, TeamId)
+                VALUES
+                (@Name, @Surname, @Weight, @Age, @IdentificationNumber,
+                 @Experience, @Handicap, @TeamId);
+                SELECT CAST(SCOPE_IDENTITY() AS INT);",
                         new
                         {
                             pilot.Name,
@@ -141,112 +141,73 @@ namespace F1.TeamAPI.Repositories
                             pilot.Weight,
                             pilot.Age,
                             pilot.IdentificationNumber,
-                            pilot.Experience,
-                            pilot.Handicap,
+                            //Experience = (decimal)(random.NextDouble() * (5 - 1) + 1),
+                            Experience = Math.Round(
+                                (decimal)
+                                (random.NextDouble() * (5 - 1) + 1), 3,
+                                MidpointRounding.AwayFromZero),
+                            //Handicap = (decimal)(random.NextDouble() * (100 - 50) + 50),
+                            Handicap = Math.Round(
+                                (decimal)
+                                (random.NextDouble() * (100 - 50) + 50), 2,
+                                MidpointRounding.AwayFromZero),
                             TeamId = teamId
                         },
                         transaction
                     );
-
                     pilotIds.Add(pilotId);
                 }
-
-                //CARS 
+                //CARS
                 var carIds = new List<int>();
-
                 for (int i = 0; i < dto.Cars.Count; i++)
                 {
                     var car = dto.Cars[i];
-
                     var carId = await _connection.ExecuteScalarAsync<int>(
                         @"INSERT INTO Car
-                        (AerodynamicCoefficent, PowerCoefficient, Weight, Model, PilotId)
-                        VALUES
-                        (@AerodynamicCoefficent, @PowerCoefficient, @Weight, @Model, @PilotId);
-                        SELECT CAST(SCOPE_IDENTITY() AS INT);",
+                (AerodynamicCoefficent, PowerCoefficient, Weight, Model, PilotId)
+                VALUES
+                (@AerodynamicCoefficent, @PowerCoefficient, @Weight, @Model, @PilotId);
+                SELECT CAST(SCOPE_IDENTITY() AS INT);",
                         new
                         {
-                            car.AerodynamicCoefficent,
-                            car.PowerCoefficient,
+                            AerodynamicCoefficent = Math.Round(
+                                (decimal)
+                                (random.NextDouble() * (10 - 0) + 0), 3,
+                                MidpointRounding.AwayFromZero),
+                            PowerCoefficient = Math.Round(
+                                (decimal)
+                                (random.NextDouble() * (10 - 0) + 0), 3,
+                                MidpointRounding.AwayFromZero),
                             car.Weight,
                             car.Model,
                             PilotId = pilotIds[i]
                         },
                         transaction
                     );
-
                     carIds.Add(carId);
                 }
-
-                ////ENGINEERS
-                //foreach (var engineer in dto.Engineers)
-                //{
-                //    await _connection.ExecuteAsync(
-                //        @"INSERT INTO Engineer
-                //        (Name, Surname, Age, Experience, Type, TeamId, CarId)
-                //        VALUES
-                //        (@Name, @Surname, @Age, @Experience, @Type, @TeamId, @CarId);",
-                //        new
-                //        {
-                //            engineer.Name,
-                //            engineer.Surname,
-                //            engineer.Age,
-                //            engineer.Experience,
-                //            engineer.Type,
-                //            TeamId = teamId,
-                //            engineer.CarId
-                //        },
-                //        transaction
-                //    );
-                //}
-
-                //// ENGINEERS
-                //int carIndex = 0;
-
-                //foreach (var engineer in dto.Engineers)
-                //{
-                //    await _connection.ExecuteAsync(
-                //        @"INSERT INTO Engineer
-                //        (Name, Surname, Age, Experience, Type, TeamId, CarId)
-                //        VALUES
-                //        (@Name, @Surname, @Age, @Experience, @Type, @TeamId, @CarId);",
-                //        new
-                //        {
-                //            engineer.Name,
-                //            engineer.Surname,
-                //            engineer.Age,
-                //            engineer.Experience,
-                //            engineer.Type,
-                //            TeamId = teamId,
-                //            CarId = carIds[carIndex]
-                //        },
-                //        transaction
-                //    );
-
-                //    // alterna carro se quiser 1 engenheiro por carro
-                //    carIndex = (carIndex + 1) % carIds.Count;
-                //}
-
                 // ENGINEERS
                 for (int i = 0; i < dto.Engineers.Count; i++)
                 {
                     var engineer = dto.Engineers[i];
-
                     // 0 e 1 → carro 0
                     // 2 e 3 → carro 1
                     var carId = carIds[i / 2];
-
                     await _connection.ExecuteAsync(
                         @"INSERT INTO Engineer
-                        (Name, Surname, Age, Experience, Type, TeamId, CarId)
-                        VALUES
-                        (@Name, @Surname, @Age, @Experience, @Type, @TeamId, @CarId);",
+                (Name, Surname, Age, Experience, Type, TeamId, CarId)
+                VALUES
+                (@Name, @Surname, @Age, @Experience, @Type, @TeamId, @CarId);",
                         new
                         {
                             engineer.Name,
                             engineer.Surname,
                             engineer.Age,
-                            engineer.Experience,
+                            //engineer.Experience,
+                            Experience = Math.Round(
+                                (decimal)
+                                (random.NextDouble() * (5 - 1) + 1), 3,
+                                MidpointRounding.AwayFromZero),
                             engineer.Type,
                             TeamId = teamId,
                             CarId = carId
@@ -254,15 +215,14 @@ namespace F1.TeamAPI.Repositories
                         transaction
                     );
                 }
-
                 //BOSSES
                 foreach (var boss in dto.Bosses)
                 {
                     await _connection.ExecuteAsync(
                         @"INSERT INTO Boss
-                        (Name, Surname, Age, Type, TeamId)
-                        VALUES
-                        (@Name, @Surname, @Age, @Type, @TeamId);",
+                (Name, Surname, Age, Type, TeamId)
+                VALUES
+                (@Name, @Surname, @Age, @Type, @TeamId);",
                         new
                         {
                             boss.Name,
@@ -282,6 +242,17 @@ namespace F1.TeamAPI.Repositories
                 throw;
             }
         }
+
+
+
+
+
+
+
+
+
+
+
 
         public async Task CreateFullTeamRandomAsync(CreateFullTeamRequestDTO dto)
         {

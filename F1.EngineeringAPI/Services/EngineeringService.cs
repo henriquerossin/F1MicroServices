@@ -259,6 +259,8 @@ namespace F1.EngineeringAPI.Services
                 int placementFirstPilot = 0, placementSecondPilot = 0;
                 int pointsFirstPilot, pointsSecondPilot, pointsTeam;
                 int firstPosition, secondPosition;
+                int[] PilotsThatDidintReceivedPoints = aux.Select(x => x.id).ToArray();
+
 
                 foreach (var itemaux in aux)
                 {
@@ -268,53 +270,64 @@ namespace F1.EngineeringAPI.Services
                         pointsSecondPilot = itemhist.SecondPilot.PilotPlacement;
                         pointsTeam = itemhist.Team.TeamPoints;
 
-                        if (itemaux.id == itemhist.FirstPilot.PilotId || itemaux.id == itemhist.SecondPilot.PilotId && itemhist.FirstPilot.PilotPlacement == 0)
+                        if (itemaux.id == itemhist.FirstPilot.PilotId || itemaux.id == itemhist.SecondPilot.PilotId)
                         {
-                            firstPosition = aux.FindIndex(x => x.id == itemhist.FirstPilot.PilotId);
-                            pointsFirstPilot += points[firstPosition];
-                            pointsTeam += points[firstPosition];
-                            placementFirstPilot = firstPosition + 1;
-
-                            secondPosition = aux.FindIndex(x => x.id == itemhist.SecondPilot.PilotId);
-                            pointsSecondPilot += points[secondPosition];
-                            pointsTeam += points[secondPosition];
-                            placementSecondPilot = secondPosition + 1;
-
-                            var newInfo = new HistoryDTO
+                            foreach (var idPilot in PilotsThatDidintReceivedPoints)
                             {
-                                Team = new TeamHistoryResponseDTO
+                                if (itemhist.FirstPilot.PilotId == idPilot || itemhist.SecondPilot.PilotId == idPilot)
                                 {
-                                    TeamId = itemhist.Team.TeamId,
-                                    TeamName = itemhist.Team.TeamName,
-                                    TeamPoints = pointsTeam,
-                                    TeamPlacement = itemhist.Team.TeamPlacement
-                                },
-                                FirstPilot = new PilotHistoryResponseDTO
-                                {
-                                    PilotId = itemhist.FirstPilot.PilotId,
-                                    PilotName = itemhist.FirstPilot.PilotName,
-                                    PilotHandicap = itemhist.FirstPilot.PilotHandicap,
-                                    PilotPoints = pointsFirstPilot,
-                                    PilotPlacement = placementFirstPilot,
-                                    Experience = itemhist.FirstPilot.Experience
-                                },
-                                FirstCar = itemhist.FirstCar,
-                                FirstEngineerCa = itemhist.FirstEngineerCa,
-                                FirstEngineerCp = itemhist.FirstEngineerCp,
-                                SecondPilot = new PilotHistoryResponseDTO
-                                {
-                                    PilotId = itemhist.SecondPilot.PilotId,
-                                    PilotName = itemhist.SecondPilot.PilotName,
-                                    PilotHandicap = itemhist.SecondPilot.PilotHandicap,
-                                    PilotPoints = pointsSecondPilot,
-                                    PilotPlacement = placementSecondPilot,
-                                    Experience = itemhist.SecondPilot.Experience
-                                },
-                                SecondCar = itemhist.SecondCar,
-                                SecondEngineerCa = itemhist.SecondEngineerCa,
-                                SecondEngineerCp = itemhist.SecondEngineerCp,
-                            };
-                            newListHistPilot.Add(newInfo);
+
+                                    firstPosition = aux.FindIndex(x => x.id == itemhist.FirstPilot.PilotId);
+                                    pointsFirstPilot += points[firstPosition];
+                                    pointsTeam += points[firstPosition];
+                                    placementFirstPilot = firstPosition + 1;
+
+                                    secondPosition = aux.FindIndex(x => x.id == itemhist.SecondPilot.PilotId);
+                                    pointsSecondPilot += points[secondPosition];
+                                    pointsTeam += points[secondPosition];
+                                    placementSecondPilot = secondPosition + 1;
+
+                                    var newInfo = new HistoryDTO
+                                    {
+                                        Team = new TeamHistoryResponseDTO
+                                        {
+                                            TeamId = itemhist.Team.TeamId,
+                                            TeamName = itemhist.Team.TeamName,
+                                            TeamPoints = pointsTeam,
+                                            TeamPlacement = itemhist.Team.TeamPlacement
+                                        },
+                                        FirstPilot = new PilotHistoryResponseDTO
+                                        {
+                                            PilotId = itemhist.FirstPilot.PilotId,
+                                            PilotName = itemhist.FirstPilot.PilotName,
+                                            PilotHandicap = itemhist.FirstPilot.PilotHandicap,
+                                            PilotPoints = pointsFirstPilot,
+                                            PilotPlacement = placementFirstPilot,
+                                            Experience = itemhist.FirstPilot.Experience
+                                        },
+                                        FirstCar = itemhist.FirstCar,
+                                        FirstEngineerCa = itemhist.FirstEngineerCa,
+                                        FirstEngineerCp = itemhist.FirstEngineerCp,
+                                        SecondPilot = new PilotHistoryResponseDTO
+                                        {
+                                            PilotId = itemhist.SecondPilot.PilotId,
+                                            PilotName = itemhist.SecondPilot.PilotName,
+                                            PilotHandicap = itemhist.SecondPilot.PilotHandicap,
+                                            PilotPoints = pointsSecondPilot,
+                                            PilotPlacement = placementSecondPilot,
+                                            Experience = itemhist.SecondPilot.Experience
+                                        },
+                                        SecondCar = itemhist.SecondCar,
+                                        SecondEngineerCa = itemhist.SecondEngineerCa,
+                                        SecondEngineerCp = itemhist.SecondEngineerCp,
+                                    };
+                                    PilotsThatDidintReceivedPoints = PilotsThatDidintReceivedPoints
+                                            .Where(id => id != itemhist.FirstPilot.PilotId && id != itemhist.SecondPilot.PilotId)
+                                            .ToArray();
+                                    newListHistPilot.Add(newInfo);
+                                }
+
+                            }
                         }
                         //voltando as posicoes temporárias para 0 para o próximo loop
                         placementFirstPilot = 0;
