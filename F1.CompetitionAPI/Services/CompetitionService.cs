@@ -1,11 +1,7 @@
-﻿using System.Text.Json;
-using Azure;
-using F1.CompetitionAPI.Controllers;
-using F1.CompetitionAPI.Repositories.Interfaces;
+﻿using F1.CompetitionAPI.Repositories.Interfaces;
 using F1.CompetitionAPI.Services.Interfaces;
 using F1.Models.CompetitionModels;
 using F1.Models.DTOs.CompetitionDTOs;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 
 namespace F1.CompetitionAPI.Services
@@ -337,9 +333,9 @@ namespace F1.CompetitionAPI.Services
                         {
                             //var circuits = await _repository.GetAllCircuitsActivesOrdenedAsync();
                             await _repository.StartTemp();
-                            //await Socorro();
+                            await CallingProduceQueueHistoryAsync();
 
-                            _ = PostHistoryAsync();
+                            //_ = PostHistoryAsync();
                         }
                     }
                 }
@@ -356,7 +352,7 @@ namespace F1.CompetitionAPI.Services
             }
         }
 
-        public async Task Socorro()
+        public async Task CallingProduceQueueHistoryAsync()
         {
             var client = _httpClientFactory.CreateClient("TeamClient");
             await client.PostAsync("ProduceQueueHistory", null);
