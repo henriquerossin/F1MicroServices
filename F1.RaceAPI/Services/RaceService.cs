@@ -163,6 +163,8 @@ namespace F1.RaceAPI.Services
             );
 
             await Task.Delay(1500);
+
+            await PublishLastEventAsync();
         }
 
         public async Task<FinalHistoryResponseDTO?> GetOneFinalHistory(int idCircuit, int idEvent)
@@ -213,7 +215,7 @@ namespace F1.RaceAPI.Services
                 body: body
             );
 
-            //await UpdateInfosForEvent();
+            await UpdateInfosForEvent();
         }
 
         public async Task<CircuitHistoryIdNameResponseDTO> GetCircuitIdName()

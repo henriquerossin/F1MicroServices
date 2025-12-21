@@ -261,10 +261,8 @@ namespace F1.TeamAPI.Services
                 await connection.CloseAsync();
 
                 _logger.LogInformation("Mensagem enviada para a fila History");
-                //await _clientRace.PostAsync("Circuit/1/Event/1", null);
 
-                var client = _httpClientFactory.CreateClient("RaceAPI");
-                //await client.PostAsync("Circuit/1/Event/1", null);
+                //await GetAllHistoryAsync();
             }
             catch (Exception ex)
             {
@@ -384,6 +382,7 @@ namespace F1.TeamAPI.Services
             {
                 await ProduceQueueAsync(history);
             }
+
 
             return histories;
         }
