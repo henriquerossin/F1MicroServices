@@ -30,7 +30,7 @@ namespace F1.RaceAPI.Services
 
         public async Task ConsumeAndSaveHistoryAsync(int idRound, int idEvent)
         {
-            bool shouldConclude = false;
+            //bool shouldConclude = false;
 
             var factory = new ConnectionFactory { HostName = "localhost" };
 
@@ -51,8 +51,8 @@ namespace F1.RaceAPI.Services
             if (_currentEventType > 5)
             {
                 _currentEventType = 1;
-                shouldConclude = true;
-                ConcludeCircuit();
+                //shouldConclude = true;
+                //await ConcludeCircuit();
             }
 
             if (idEvent != _currentEventType)
@@ -72,6 +72,7 @@ namespace F1.RaceAPI.Services
 
             consumer.ReceivedAsync += async (_, ea) =>
             {
+                bool shouldConclude = false;
                 try
                 {
                     var body = ea.Body.ToArray();
@@ -120,17 +121,30 @@ namespace F1.RaceAPI.Services
                             };
 
                             historyList.Clear();
-                            _currentEventType++;
+
+                            //_currentEventType++;
 
                             if (_currentEventType == 5)
                             {
+                                shouldConclude = true;
                                 _currentEventType = 1;
+                            }
+                            else
+                            {
+                                _currentEventType++;
                             }
                         }
                     }
 
                     if (finalEvent is not null)
+                    {
                         await _raceRepository.SaveEventAsync(finalEvent);
+
+                        if (shouldConclude)
+                        {
+                            await ConcludeCircuit();
+                        }
+                    }
 
                     await channel.BasicAckAsync(ea.DeliveryTag, false);
 
@@ -189,8 +203,7 @@ namespace F1.RaceAPI.Services
             );
 
             // Encoding Process
-            var body = Encoding.UTF8.GetBytes(
-                JsonSerializer.Serialize(lastEvent)
+            var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(lastEvent)
             );
 
             // Publishing to AttHistory Queue
@@ -200,7 +213,7 @@ namespace F1.RaceAPI.Services
                 body: body
             );
 
-            await UpdateInfosForEvent();
+            //await UpdateInfosForEvent();
         }
 
         public async Task<CircuitHistoryIdNameResponseDTO> GetCircuitIdName()

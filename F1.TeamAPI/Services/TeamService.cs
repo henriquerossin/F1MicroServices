@@ -90,52 +90,110 @@ namespace F1.TeamAPI.Services
             return true;
         }
 
+        //public async Task<List<HistoryDTO>> ConsumingQueue()
+        //{
+        //    var listInfo = new List<HistoryDTO>();
+
+        //    try
+        //    {
+        //        var factory = new ConnectionFactory { HostName = "localhost" };
+        //        using var connection = await factory.CreateConnectionAsync();
+        //        using var consumerChannel = await connection.CreateChannelAsync();
+
+        //        await consumerChannel.QueueDeclareAsync(queue: "UpdateHistory",
+        //                                         durable: true,
+        //                                         exclusive: false,
+        //                                         autoDelete: false,
+        //                                         arguments: null);
+
+        //        var consumer = new AsyncEventingBasicConsumer(consumerChannel);
+
+        //        consumer.ReceivedAsync += async (model, ea) =>
+        //        {
+        //            var body = ea.Body.ToArray();
+        //            var message = System.Text.Encoding.UTF8.GetString(body);
+        //            var historyDto = JsonSerializer.Deserialize<HistoryDTO>(message);
+
+        //            if (historyDto != null)
+        //            {
+        //                lock (listInfo)
+        //                {
+        //                    listInfo.Add(historyDto);
+        //                }
+        //            }
+
+        //            await consumerChannel.BasicAckAsync(ea.DeliveryTag, false);
+        //        };
+
+        //        await consumerChannel.BasicConsumeAsync(queue: "UpdateHistory",
+        //                                         autoAck: false,
+        //                                         consumer: consumer);
+
+        //        await UpdatingCurrentInfo(listInfo);
+
+        //        return listInfo;
+
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, "An error occurred while updating the current event information.");
+        //        throw;
+        //    }
+        //}
+
         public async Task<List<HistoryDTO>> ConsumingQueue()
         {
             var listInfo = new List<HistoryDTO>();
+            var tcs = new TaskCompletionSource<bool>(
+                TaskCreationOptions.RunContinuationsAsynchronously);
 
-            try
+            var factory = new ConnectionFactory { HostName = "localhost" };
+            var connection = await factory.CreateConnectionAsync();
+            var consumerChannel = await connection.CreateChannelAsync();
+
+            await consumerChannel.QueueDeclareAsync(
+                queue: "UpdateHistory",
+                durable: true,
+                exclusive: false,
+                autoDelete: false,
+                arguments: null);
+
+            var consumer = new AsyncEventingBasicConsumer(consumerChannel);
+
+            consumer.ReceivedAsync += async (_, ea) =>
             {
-                var factory = new ConnectionFactory { HostName = "localhost" };
-                using var connection = await factory.CreateConnectionAsync();
-                using var consumerChannel = await connection.CreateChannelAsync();
-
-                await consumerChannel.QueueDeclareAsync(queue: "UpdateHistory",
-                                                 durable: true,
-                                                 exclusive: false,
-                                                 autoDelete: false,
-                                                 arguments: null);
-
-                var consumer = new AsyncEventingBasicConsumer(consumerChannel);
-
-                consumer.ReceivedAsync += async (model, ea) =>
+                try
                 {
-                    var body = ea.Body.ToArray();
-                    var message = System.Text.Encoding.UTF8.GetString(body);
-                    var historyDto = JsonSerializer.Deserialize<HistoryDTO>(message);
+                    var message = Encoding.UTF8.GetString(ea.Body.ToArray());
+                    var history = JsonSerializer.Deserialize<HistoryDTO>(message);
 
-                    if (historyDto != null)
-                    {
-                        lock (listInfo)
-                        {
-                            listInfo.Add(historyDto);
-                        }
-                    }
+                    if (history != null)
+                        listInfo.Add(history);
 
                     await consumerChannel.BasicAckAsync(ea.DeliveryTag, false);
-                };
 
-                await consumerChannel.BasicConsumeAsync(queue: "UpdateHistory",
-                                                 autoAck: false,
-                                                 consumer: consumer);
+                    tcs.TrySetResult(true);
+                }
+                catch (Exception ex)
+                {
+                    tcs.TrySetException(ex);
+                }
+            };
 
-                return listInfo;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "An error occurred while updating the current event information.");
-                throw;
-            }
+            var tag = await consumerChannel.BasicConsumeAsync(
+                queue: "UpdateHistory",
+                autoAck: false,
+                consumer: consumer);
+
+            await tcs.Task;
+
+            await UpdatingCurrentInfo(listInfo);
+
+            await consumerChannel.BasicCancelAsync(tag);
+            await consumerChannel.CloseAsync();
+            await connection.CloseAsync();
+
+            return listInfo;
         }
 
         public async Task<List<HistoryDTO>> UpdatingCurrentInfo(List<HistoryDTO> listCurrentInfo)

@@ -33,6 +33,21 @@ namespace F1.TeamAPI.Controllers
             return Ok();
         }
 
+        [HttpPost("ConsumingUpdateHistoryQueue")]
+        public async Task<IActionResult> ConsumingUpdateQueue()
+        {
+            try
+            {
+                var finalConsumer = await _teamService.ConsumingQueue();
+                return Ok();
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Error while trying to consuming UpdateHistory queue.");
+                throw;
+            }
+        }
+
 
         [HttpPost("createFullTeamRandom")]
         public async Task<IActionResult> CreateFullTeamRandom(CreateFullTeamRequestDTO dto)

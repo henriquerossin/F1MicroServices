@@ -1,7 +1,10 @@
-﻿namespace F1.Models.DTOs.TeamDTOs.PilotDTOs
+﻿using System.Text.Json.Serialization;
+
+namespace F1.Models.DTOs.TeamDTOs.PilotDTOs
 {
     public class PilotHistoryResponseDTO
     {
+        [JsonPropertyName("pilotId")]
         public int PilotId { get; init; }
         public string PilotName { get; init; }
         public decimal PilotHandicap { get; init; }
