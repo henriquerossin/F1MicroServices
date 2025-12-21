@@ -1,11 +1,7 @@
-﻿using System.Text.Json;
-using Azure;
-using F1.CompetitionAPI.Controllers;
-using F1.CompetitionAPI.Repositories.Interfaces;
+﻿using F1.CompetitionAPI.Repositories.Interfaces;
 using F1.CompetitionAPI.Services.Interfaces;
 using F1.Models.CompetitionModels;
 using F1.Models.DTOs.CompetitionDTOs;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 
 namespace F1.CompetitionAPI.Services

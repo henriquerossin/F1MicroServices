@@ -1,12 +1,10 @@
 ﻿using Dapper;
-using F1.Models.DTOs.HistoryDTOs;
 using F1.Models.DTOs.TeamDTOs.TeamDTOs;
 using F1.TeamAPI.Data;
 using F1.TeamAPI.DTOs.TeamCreation;
 using F1.TeamAPI.Repositories.Interfaces;
 using F1.TeamAPI.Services.Generators;
 using Microsoft.Data.SqlClient;
-using System;
 
 namespace F1.TeamAPI.Repositories
 {
@@ -201,55 +199,6 @@ namespace F1.TeamAPI.Repositories
 
                     carIds.Add(carId);
                 }
-
-                ////ENGINEERS
-                //foreach (var engineer in dto.Engineers)
-                //{
-                //    await _connection.ExecuteAsync(
-                //        @"INSERT INTO Engineer
-                //        (Name, Surname, Age, Experience, Type, TeamId, CarId)
-                //        VALUES
-                //        (@Name, @Surname, @Age, @Experience, @Type, @TeamId, @CarId);",
-                //        new
-                //        {
-                //            engineer.Name,
-                //            engineer.Surname,
-                //            engineer.Age,
-                //            engineer.Experience,
-                //            engineer.Type,
-                //            TeamId = teamId,
-                //            engineer.CarId
-                //        },
-                //        transaction
-                //    );
-                //}
-
-                //// ENGINEERS
-                //int carIndex = 0;
-
-                //foreach (var engineer in dto.Engineers)
-                //{
-                //    await _connection.ExecuteAsync(
-                //        @"INSERT INTO Engineer
-                //        (Name, Surname, Age, Experience, Type, TeamId, CarId)
-                //        VALUES
-                //        (@Name, @Surname, @Age, @Experience, @Type, @TeamId, @CarId);",
-                //        new
-                //        {
-                //            engineer.Name,
-                //            engineer.Surname,
-                //            engineer.Age,
-                //            engineer.Experience,
-                //            engineer.Type,
-                //            TeamId = teamId,
-                //            CarId = carIds[carIndex]
-                //        },
-                //        transaction
-                //    );
-
-                //    // alterna carro se quiser 1 engenheiro por carro
-                //    carIndex = (carIndex + 1) % carIds.Count;
-                //}
 
                 // ENGINEERS
                 for (int i = 0; i < dto.Engineers.Count; i++)
@@ -494,9 +443,6 @@ namespace F1.TeamAPI.Repositories
                             transaction
                             );
                 }
-
-
-
                 transaction.Commit();
             }
             catch
