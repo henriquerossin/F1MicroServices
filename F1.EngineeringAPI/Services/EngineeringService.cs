@@ -75,6 +75,16 @@ namespace F1.EngineeringAPI.Services
             }
         }
 
+        private static decimal Round3(decimal value)
+        {
+            return Math.Round(value, 3, MidpointRounding.AwayFromZero);
+        }
+
+        private static decimal Round2(decimal value)
+        {
+            return Math.Round(value, 2, MidpointRounding.AwayFromZero);
+        }
+
         public async Task<FinalHistoryResponseDTO> UpdatingInfosForEventsAsync(FinalHistoryResponseDTO finalHistory)
         {
             var newListHistories = new FinalHistoryResponseDTO().HistoryList;
@@ -91,11 +101,31 @@ namespace F1.EngineeringAPI.Services
                 randomCpFirstCar = (decimal)((firstRandomandom.NextDouble() * 2) - 1);
 
 
-                newCaFirstCar = info.FirstCar.CarAerodynamicCoefficent + info.FirstEngineerCa.Experience * randomCaFirstCar;
-                newCpFirstCar = info.FirstCar.CarPowerCoefficient + info.FirstEngineerCp.Experience * randomCpFirstCar;
+                newCaFirstCar = Round3(info.FirstCar.CarAerodynamicCoefficent + info.FirstEngineerCa.Experience * randomCaFirstCar);
 
-                newHandicapFirstPilot = info.FirstPilot.PilotHandicap - (info.FirstPilot.Experience * 0.5m);
+                if (newCaFirstCar > 10)
+                    newCaFirstCar = 10;
 
+                if (newCaFirstCar < 0)
+                    newCaFirstCar = 0;
+
+                newCpFirstCar = Round3(
+                    info.FirstCar.CarPowerCoefficient +
+                    info.FirstEngineerCp.Experience * randomCpFirstCar);
+
+                if (newCpFirstCar > 10)
+                    newCpFirstCar = 10;
+
+                if (newCpFirstCar < 0)
+                    newCpFirstCar = 0;
+
+                newHandicapFirstPilot = Round2(info.FirstPilot.PilotHandicap - (info.FirstPilot.Experience * 0.5m));
+
+                if (newHandicapFirstPilot > 100)
+                    newHandicapFirstPilot = 100;
+
+                if (newHandicapFirstPilot < 0)
+                    newHandicapFirstPilot = 0;
 
                 //realizando cálculos das atualizações do ca, cp e handicap para o SEGUNDO piloto e carro
                 decimal newCaSecondCar, newCpSecondCar, newHandicapSecondPilot, randomCaSecondCar, randomCpSecondCar;
@@ -106,10 +136,29 @@ namespace F1.EngineeringAPI.Services
                 randomCpSecondCar = (decimal)((secondRandom.NextDouble() * 2) - 1);
 
 
-                newCaSecondCar = info.SecondCar.CarAerodynamicCoefficent + info.SecondEngineerCa.Experience * randomCaSecondCar;
-                newCpSecondCar = info.SecondCar.CarPowerCoefficient + info.SecondEngineerCp.Experience * randomCpSecondCar;
+                newCaSecondCar = Round3(info.SecondCar.CarAerodynamicCoefficent + info.SecondEngineerCa.Experience * randomCaSecondCar);
 
-                newHandicapSecondPilot = info.SecondPilot.PilotHandicap - (info.SecondPilot.Experience * 0.5m);
+                if (newCaSecondCar > 10)
+                    newCaSecondCar = 10;
+
+                if (newCaSecondCar < 0)
+                    newCaSecondCar = 0;
+
+                newCpSecondCar = Round3(info.SecondCar.CarPowerCoefficient + info.SecondEngineerCp.Experience * randomCpSecondCar);
+
+                if (newCpSecondCar > 10)
+                    newCpSecondCar = 10;
+
+                if (newCpSecondCar < 0)
+                    newCpSecondCar = 0;
+
+                newHandicapSecondPilot = Round2(info.SecondPilot.PilotHandicap - (info.SecondPilot.Experience * 0.5m));
+
+                if (newHandicapSecondPilot > 100)
+                    newHandicapSecondPilot = 100;
+
+                if (newHandicapSecondPilot < 0)
+                    newHandicapSecondPilot = 0;
 
                 //criando o novo obj HistoryDTO para ser colocado na nova lista
                 var newInfo = new HistoryDTO
