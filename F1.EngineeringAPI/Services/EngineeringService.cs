@@ -256,9 +256,9 @@ namespace F1.EngineeringAPI.Services
 
                 //atribuindo os pontos e colocação de cada piloto e de cada equipe conforme sua colocação na lista tempRanking
                 int[] points = { 25, 18, 15, 12, 10, 8, 6, 4, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-                int placementFirstPilot = 0, placementSecondPilot = 0;
                 int pointsFirstPilot, pointsSecondPilot, pointsTeam;
                 int firstPosition, secondPosition;
+                int placementFirstPilot = 0, placementSecondPilot = 0;
 
                 foreach (var itemaux in aux)
                 {
@@ -268,7 +268,7 @@ namespace F1.EngineeringAPI.Services
                         pointsSecondPilot = itemhist.SecondPilot.PilotPlacement;
                         pointsTeam = itemhist.Team.TeamPoints;
 
-                        if (itemaux.id == itemhist.FirstPilot.PilotId || itemaux.id == itemhist.SecondPilot.PilotId && itemhist.FirstPilot.PilotPlacement == 0)
+                        if ((itemaux.id == itemhist.FirstPilot.PilotId || itemaux.id == itemhist.SecondPilot.PilotId) && itemhist.FirstPilot.PilotPlacement == 0)
                         {
                             firstPosition = aux.FindIndex(x => x.id == itemhist.FirstPilot.PilotId);
                             pointsFirstPilot += points[firstPosition];
