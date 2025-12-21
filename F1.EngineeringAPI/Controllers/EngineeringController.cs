@@ -1,6 +1,4 @@
 ﻿using F1.EngineeringAPI.Services.Interfaces;
-using F1.Models.DTOs.HistoryDTOs;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace F1.EngineeringAPI.Controllers

@@ -187,11 +187,13 @@ namespace F1.TeamAPI.Services
 
             await tcs.Task;
 
-            await UpdatingCurrentInfo(listInfo.ToList());
+            //await UpdatingCurrentInfo(listInfo);
 
             await consumerChannel.BasicCancelAsync(tag);
             await consumerChannel.CloseAsync();
             await connection.CloseAsync();
+
+           // await GetAllHistoryAsync();
 
             return listInfo;
         }
@@ -217,6 +219,8 @@ namespace F1.TeamAPI.Services
 
                 newListCurrentInfo.Add(item);
             }
+
+
             return newListCurrentInfo;
         }
 
@@ -262,7 +266,7 @@ namespace F1.TeamAPI.Services
 
                 _logger.LogInformation("Mensagem enviada para a fila History");
 
-                //await GetAllHistoryAsync();
+
             }
             catch (Exception ex)
             {
@@ -271,11 +275,11 @@ namespace F1.TeamAPI.Services
             }
         }
 
-        public async Task NotifyRaceApi()
-        {
-            var client = _httpClientFactory.CreateClient("RaceAPI");
-            await client.PostAsync("Circuit/1/Event/1", null);
-        }
+        //public async Task NotifyRaceApi()
+        //{
+        //    var client = _httpClientFactory.CreateClient("RaceAPI");
+        //    await client.PostAsync("Circuit/1/Event/1", null);
+        //}
 
         //public async Task<List<HistoryDTO>> GetAllHistoryAsync()
         //{
