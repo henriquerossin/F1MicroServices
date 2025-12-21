@@ -1,5 +1,7 @@
 ﻿using F1.Application.Services.Validation;
 using F1.Models.DTOs.HistoryDTOs;
+using F1.Models.DTOs.TeamDTOs.PilotDTOs;
+using F1.Models.DTOs.TeamDTOs.TeamDTOs;
 using F1.Models.Enums;
 using F1.TeamAPI.DTOs.TeamCreation;
 using F1.TeamAPI.Repositories.Interfaces;
@@ -385,6 +387,17 @@ namespace F1.TeamAPI.Services
 
 
             return histories;
+        }
+
+        public async Task<List<PilotResponseDTO>> GetAllPilotsFinal()
+        {
+           var pilots = await _pilotRepo.GetAllPilotsFinalAsync();
+            return pilots;
+        }
+        public async Task<List<TeamResponseDTO>> GetAllTeamsFinalAsync()
+        {
+            var teams = await _teamRepo.GetAllTeamsFinalAsync();
+            return teams;
         }
     }
 }

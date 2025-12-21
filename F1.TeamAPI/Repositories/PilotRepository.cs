@@ -113,6 +113,34 @@ namespace F1.TeamAPI.Repositories
             }
         }
 
+
+        public async Task<List<PilotResponseDTO>> GetAllPilotsFinalAsync()
+        {
+            try
+            {
+                const string sql = @"
+                    SELECT
+                        Id,
+                        Name,
+                        Surname,
+                        Age,
+                        Weight,
+                        Points,
+                        Position
+                    FROM Pilot
+                    WHERE Status = 1;
+                    ORDER BY Points;
+                ";
+
+                var pilots = (await _connection.QueryAsync<PilotResponseDTO>(sql)).ToList();
+                return pilots;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao obter pilotos: " + ex.Message);
+            }
+        }
+
         public async Task<List<PilotResponseDTO>> GetPilotsByTeamAsync(int teamId)
         {
             try

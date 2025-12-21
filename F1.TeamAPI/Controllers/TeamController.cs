@@ -103,5 +103,35 @@ namespace F1.TeamAPI.Controllers
                 return StatusCode(500, "Internal server error");
             }
         }
+
+        [HttpGet("getPilotsFinal")]
+        public async Task<IActionResult> GetAllPilotsFinalAsync()
+        {
+            try
+            {
+                await _teamService.GetAllPilotsFinal();
+                return Ok();
+            } catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while geting the pilot list.");
+                return StatusCode(500, "Internal server error");
+            }
+        }
+
+        [HttpGet("getTeamsFinal")]
+        public async Task<IActionResult> GetAllTeamsFinalAsync()
+        {
+            try
+            {
+                await _teamService.GetAllTeamsFinal();
+                return Ok();
+            }catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while geting the team list.");
+                return StatusCode(500, "Internal server error");
+            }
+        }
+
+    
     }
 }
