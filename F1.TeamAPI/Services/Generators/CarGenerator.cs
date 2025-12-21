@@ -4,7 +4,7 @@ namespace F1.TeamAPI.Services.Generators
 {
     public class CarGenerator
     {
-        
+
         private const string letras = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         private const string numeros = "0123456789";
 
@@ -30,8 +30,8 @@ namespace F1.TeamAPI.Services.Generators
                 .Select(s => s[r.Next(s.Length)]).ToArray());
             string doisNumeros = new string(Enumerable.Repeat(numeros, 2)
                  .Select(s => s[r.Next(s.Length)]).ToArray());
-                    return tresLetras + doisNumeros;
+            return tresLetras + doisNumeros;
         }
-    
-}
+
+    }
 }

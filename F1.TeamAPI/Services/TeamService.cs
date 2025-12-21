@@ -187,7 +187,7 @@ namespace F1.TeamAPI.Services
 
             await tcs.Task;
 
-            await UpdatingCurrentInfo(listInfo);
+            await UpdatingCurrentInfo(listInfo.ToList());
 
             await consumerChannel.BasicCancelAsync(tag);
             await consumerChannel.CloseAsync();

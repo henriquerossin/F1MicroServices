@@ -162,7 +162,7 @@ namespace F1.RaceAPI.Services
                 consumer: consumer
             );
 
-            await Task.Delay(10000);
+            await Task.Delay(1500);
         }
 
         public async Task<FinalHistoryResponseDTO?> GetOneFinalHistory(int idCircuit, int idEvent)
