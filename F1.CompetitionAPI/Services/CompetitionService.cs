@@ -328,7 +328,7 @@ namespace F1.CompetitionAPI.Services
                     }
                     else
                     {
-                        var cadastroCompleto = await ValidateTeamAsync(); // validação que pego no endpoint do pedro 
+                        var cadastroCompleto = true; //await ValidateTeamAsync(); // validação que pego no endpoint do pedro 
                         if (cadastroCompleto is false)
                         {
                             _logger.LogError("Temporada só começa com o cadastros completo de todas as equipes");

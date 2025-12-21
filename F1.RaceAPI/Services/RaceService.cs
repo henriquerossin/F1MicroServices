@@ -181,7 +181,7 @@ namespace F1.RaceAPI.Services
         //    );
         //}
 
-        public async Task ConsumeAndSaveHistoryAsync(int idRound, int idEvent)
+        public async Task ConsumeAndSaveHistoryAsync(int idRound, int idEvent) // dps do pedro empurrar pra fila
         {
             var factory = new ConnectionFactory { HostName = "localhost" };
 
