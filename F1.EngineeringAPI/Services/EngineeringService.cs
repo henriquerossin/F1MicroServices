@@ -405,7 +405,7 @@ namespace F1.EngineeringAPI.Services
         public async Task NotifyTeamApiToUpdate()
         {
             var client = _httpClientFactory.CreateClient("TeamAPI");
-            await client.PostAsync("ConsumingUpdateHistoryQueue", null);
+            await client.PostAsync("UpdateCurrentInfo", null);
         }
 
         public async Task CallingConsumer()

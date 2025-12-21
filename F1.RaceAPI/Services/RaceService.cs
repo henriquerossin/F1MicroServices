@@ -45,18 +45,18 @@ namespace F1.RaceAPI.Services
                 arguments: null
             );
 
-            var lastEvent = await _raceRepository.GetLastEventAsync();
-            _currentEventType = lastEvent?.EventType + 1 ?? 1;
+            //var lastEvent = await _raceRepository.GetLastEventAsync();
+            //_currentEventType = lastEvent?.EventType + 1 ?? 1;
 
-            if (_currentEventType > 5)
-            {
-                _currentEventType = 1;
-                //shouldConclude = true;
-                //await ConcludeCircuit();
-            }
+            //if (_currentEventType > 5)
+            //{
+            //    _currentEventType = 1;
+            //    shouldConclude = true;
+            //    await ConcludeCircuit();
+            //}
 
-            if (idEvent != _currentEventType)
-                throw new InvalidOperationException($"Invalid Race! The next race is {_currentEventType}");
+            //if (idEvent != _currentEventType)
+            //    throw new InvalidOperationException($"Invalid Race! The next race is {_currentEventType}");
 
             var currentCircuit = await GetCircuitIdName();
             // TODO: Ta torto
@@ -111,7 +111,7 @@ namespace F1.RaceAPI.Services
                             {
                                 Id = MongoDB.Bson.ObjectId.GenerateNewId().ToString(),
                                 CreatedAt = DateTime.UtcNow,
-                                EventType = _currentEventType,
+                                EventType = idEvent,
                                 CompetitionId = new CompetitionHistoryResponseDTO
                                 {
                                     Id = currentCircuit.Id,
@@ -123,16 +123,16 @@ namespace F1.RaceAPI.Services
                             historyList.Clear();
 
                             //_currentEventType++;
-
-                            if (_currentEventType == 5)
-                            {
-                                shouldConclude = true;
-                                _currentEventType = 1;
-                            }
-                            else
-                            {
-                                _currentEventType++;
-                            }
+                            //tirar e usar referencia da url 
+                            //if (_currentEventType == 5)
+                            //{
+                            //    shouldConclude = true;
+                            //    _currentEventType = 1;
+                            //}
+                            //else
+                            //{
+                            //    _currentEventType++;
+                            //}
                         }
                     }
 
@@ -140,10 +140,10 @@ namespace F1.RaceAPI.Services
                     {
                         await _raceRepository.SaveEventAsync(finalEvent);
 
-                        if (shouldConclude)
-                        {
-                            await ConcludeCircuit();
-                        }
+                        //if (shouldConclude)
+                        //{
+                        //    await ConcludeCircuit();
+                        //}
                     }
 
                     await channel.BasicAckAsync(ea.DeliveryTag, false);
