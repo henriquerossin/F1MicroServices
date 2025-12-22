@@ -1,10 +1,12 @@
 ﻿using Dapper;
+using F1.Models.DTOs.TeamDTOs.PilotDTOs;
 using F1.Models.DTOs.TeamDTOs.TeamDTOs;
 using F1.TeamAPI.Data;
 using F1.TeamAPI.DTOs.TeamCreation;
 using F1.TeamAPI.Repositories.Interfaces;
 using F1.TeamAPI.Services.Generators;
 using Microsoft.Data.SqlClient;
+using System.Data.SqlTypes;
 
 namespace F1.TeamAPI.Repositories
 {
@@ -55,6 +57,18 @@ namespace F1.TeamAPI.Repositories
                 throw new Exception("Erro ao obter times: " + ex.Message);
             }
 
+        }
+
+        public async Task<List<PilotPointsResponseDTO>> GetPilotsByPointsAsync()
+        {
+            var sqlString =
+                @"select [Id], [Name], [Points] 
+                from Pilot
+                order by Points desc";
+
+            var pilots = await _connection.QueryAsync<PilotPointsResponseDTO>(sqlString);
+
+            return pilots.ToList();
         }
 
         public async Task CreateTeamAsync(TeamRequestDTO dto)

@@ -1,5 +1,6 @@
 ﻿using F1.Application.Services.Validation;
 using F1.Models.DTOs.HistoryDTOs;
+using F1.Models.DTOs.TeamDTOs.PilotDTOs;
 using F1.Models.Enums;
 using F1.TeamAPI.DTOs.TeamCreation;
 using F1.TeamAPI.Repositories.Interfaces;
@@ -59,6 +60,13 @@ namespace F1.TeamAPI.Services
         public async Task CreateFullTeamAsync(CreateFullTeamRequestDTO dto)
         {
             await _teamRepo.CreateFullTeamAsync(dto);
+        }
+
+        public async Task<List<PilotPointsResponseDTO>> GetPilotsByPointsAsync()
+        {
+            var teste =  await _teamRepo.GetPilotsByPointsAsync();
+
+            return teste;
         }
 
         public async Task CreateFullTeamRandomAsync(CreateFullTeamRequestDTO dto)
