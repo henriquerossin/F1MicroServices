@@ -1,4 +1,5 @@
 ﻿using F1.Models.DTOs.HistoryDTOs;
+using F1.Models.DTOs.TeamDTOs.PilotDTOs;
 using F1.TeamAPI.DTOs.TeamCreation;
 
 namespace F1.TeamAPI.Services.Interfaces
@@ -12,5 +13,7 @@ namespace F1.TeamAPI.Services.Interfaces
         Task CreateFullTeamAsync(CreateFullTeamRequestDTO dto); //criação completa da equipe
         Task<List<HistoryDTO>> GetAllHistoryAsync();
         Task CreateFullTeamRandomAsync(CreateFullTeamRequestDTO dto);
+
+        Task<List<PilotPointsResponseDTO>> GetPilotsByPointsAsync();
     }
 }

@@ -1,4 +1,5 @@
-﻿using F1.TeamAPI.DTOs.TeamCreation;
+﻿using F1.Models.DTOs.TeamDTOs.PilotDTOs;
+using F1.TeamAPI.DTOs.TeamCreation;
 using F1.TeamAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -22,6 +23,13 @@ namespace F1.TeamAPI.Controllers
         {
             var isValid = await _teamService.ValidateTeamAsync();
             return Ok(isValid);
+        }
+
+        [HttpGet("getPilotsByPoints")]
+        public async Task<ActionResult<List<PilotPointsResponseDTO>>> GetPilotsByPoints()
+        {
+            var pilots = await _teamService.GetPilotsByPointsAsync();
+            return Ok(pilots);
         }
 
         [HttpPost("createFullTeamManually")]
