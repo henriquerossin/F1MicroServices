@@ -8,7 +8,6 @@
         public int Age { get; private set; }
         public decimal Experience { get; private set; }
         public bool Type { get; private set; }
-        public bool Status { get; private set; }
         public int CarId { get; private set; }
         public int TeamId { get; private set; }
         public bool IsActive { get; private set; }
@@ -28,7 +27,6 @@
             Age = age;
             Experience = experience;
             Type = type;
-            Status = status;
             TeamId = teamId;
             CarId = carId;
             IsActive = true;

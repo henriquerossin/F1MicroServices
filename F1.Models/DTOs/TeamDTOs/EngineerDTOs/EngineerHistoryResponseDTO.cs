@@ -4,7 +4,7 @@
     {
         public int Id { get; init; }
         public decimal Experience { get; init; }
-        public bool Type { get; init; }
+        public int Type { get; init; }
         public int TeamId { get; init; }
     }
 }

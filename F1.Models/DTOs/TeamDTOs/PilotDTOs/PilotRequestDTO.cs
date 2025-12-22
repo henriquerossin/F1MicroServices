@@ -7,7 +7,6 @@
         public decimal Weight { get; init; }
         public int Age { get; init; }
         public int IdentificationNumber { get; init; }
-        public bool Status { get; init; }
         public decimal Experience { get; init; }
         public decimal Handicap { get; init; }
         public int TeamId { get; init; }

@@ -9,5 +9,7 @@ namespace F1.TeamAPI.Repositories.Interfaces
         Task CreateCarAsync(CarRequestDTO dto);
         Task UpdateCarAsync(int id, CarRequestDTO dto);
         Task DeleteCarAsync(int id);
+        Task UpdateCACPByPilotIdAsync(int id, decimal ca, decimal cp);
+        Task<List<CarHistoryResponseDTO>> GetAllCarsHistoryAsync();
     }
 }

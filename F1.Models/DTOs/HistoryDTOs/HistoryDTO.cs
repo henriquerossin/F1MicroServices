@@ -29,8 +29,5 @@ namespace F1.Models.DTOs.HistoryDTOs
         public CarHistoryResponseDTO SecondCar { get; init; }
         public EngineerHistoryResponseDTO SecondEngineerCa { get; init; }
         public EngineerHistoryResponseDTO SecondEngineerCp { get; init; }
-
-        //Type
-        public int EventType { get; init; }
     }
 }

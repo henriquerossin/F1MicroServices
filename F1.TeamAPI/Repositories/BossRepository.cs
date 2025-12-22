@@ -21,9 +21,9 @@ namespace F1.TeamAPI.Repositories
             {
                 var sql = @"
                     INSERT INTO Boss
-                    (Name, Surname, Age, Type, Status, TeamId, IsActive)
+                    (Name, Surname, Age, Type, Status, TeamId)
                     VALUES
-                    (@Name, @Surname, @Age, @Type, @Status, @TeamId, 1);
+                    (@Name, @Surname, @Age, @Type, @Status, @TeamId);
                 ";
 
                 await _connection.ExecuteAsync(sql, dto);
@@ -84,7 +84,7 @@ namespace F1.TeamAPI.Repositories
                         b.Surname,
                         b.Age,
                         b.Type,
-                        b.Status,
+                        b.IsActive,
                         b.TeamId
                     FROM Boss b
                     INNER JOIN Team t ON t.Id = b.TeamId
@@ -115,7 +115,6 @@ namespace F1.TeamAPI.Repositories
                         Surname = @Surname,
                         Age = @Age,
                         Type = @Type,
-                        Status = @Status,
                         TeamId = @TeamId
                     WHERE Id = @Id
                       AND IsActive = 1;
@@ -128,7 +127,6 @@ namespace F1.TeamAPI.Repositories
                     dto.Surname,
                     dto.Age,
                     dto.Type,
-                    dto.Status,
                     dto.TeamId
                 });
             }

@@ -7,8 +7,7 @@
         public string Surname { get; init; }
         public int Age { get; init; }
         public decimal Experience { get; init; }
-        public bool Type { get; init; }
-        public bool Status { get; init; }
+        public int Type { get; init; }
         public int TeamId { get; init; }
         public int CarId { get; init; }
         public bool IsActive { get; init; }

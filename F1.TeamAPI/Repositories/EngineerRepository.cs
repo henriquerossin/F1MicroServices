@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using F1.Models.DTOs.TeamDTOs.EngineerDTOs;
+using F1.Models.DTOs.TeamDTOs.PilotDTOs;
 using F1.TeamAPI.Data;
 using F1.TeamAPI.Repositories.Interfaces;
 using Microsoft.Data.SqlClient;
@@ -9,24 +10,51 @@ namespace F1.TeamAPI.Repositories
     public class EngineerRepository : IEngineerRepository
     {
         private readonly SqlConnection _connection;
+        private readonly ILogger<EngineerRepository> _logger;
 
-        public EngineerRepository(ConnectionDB c)
+        public EngineerRepository(ConnectionDB c, ILogger<EngineerRepository> logger)
         {
             _connection = c.GetSlqConnection();
+            _logger = logger;
         }
 
         public async Task CreateEngineerAsync(EngineerRequestDTO dto)
         {
             try
             {
-                var sql = @"
+                const string sql = @"
                     INSERT INTO Engineer
-                    (Name, Surname, Age, Experience, Type, Status, TeamId, CarId, IsActive)
+                    (
+                        Name,
+                        Surname,
+                        Age,
+                        Experience,
+                        Type,
+                        TeamId,
+                        CarId
+                    )
                     VALUES
-                    (@Name, @Surname, @Age, @Experience, @Type, @Status, @TeamId, @CarId, 1);
+                    (
+                        @Name,
+                        @Surname,
+                        @Age,
+                        @Experience,
+                        @Type,
+                        @TeamId,
+                        @CarId
+                    );
                 ";
 
-                await _connection.ExecuteAsync(sql, dto);
+                await _connection.ExecuteAsync(sql, new
+                {
+                    dto.Name,
+                    dto.Surname,
+                    dto.Age,
+                    dto.Experience,
+                    dto.Type,
+                    dto.TeamId,
+                    dto.CarId
+                });
             }
             catch (Exception ex)
             {
@@ -38,7 +66,11 @@ namespace F1.TeamAPI.Repositories
         {
             try
             {
-                var sql = @"UPDATE Engineer SET IsActive = 0 WHERE Id = @Id;";
+                const string sql = @"
+                    UPDATE Engineer
+                    SET IsActive = 0
+                    WHERE Id = @Id;
+                ";
 
                 await _connection.ExecuteAsync(sql, new { Id = id });
             }
@@ -52,7 +84,7 @@ namespace F1.TeamAPI.Repositories
         {
             try
             {
-                var sql = @"
+                const string sql = @"
                     SELECT
                         Id,
                         Name,
@@ -60,7 +92,6 @@ namespace F1.TeamAPI.Repositories
                         Age,
                         Experience,
                         Type,
-                        Status,
                         TeamId,
                         CarId
                     FROM Engineer
@@ -79,7 +110,7 @@ namespace F1.TeamAPI.Repositories
         {
             try
             {
-                var sql = @"
+                const string sql = @"
                     SELECT
                         e.Id,
                         e.Name,
@@ -87,14 +118,15 @@ namespace F1.TeamAPI.Repositories
                         e.Age,
                         e.Experience,
                         e.Type,
-                        e.Status,
+                        e.IsActive,
                         e.TeamId,
                         e.CarId
                     FROM Engineer e
                     INNER JOIN Team t ON t.Id = e.TeamId
-                    WHERE e.TeamId = @TeamId
-                      AND e.IsActive = 1
-                      AND t.IsActive = 1;
+                    WHERE
+                        e.TeamId = @TeamId
+                        AND e.IsActive = 1
+                        AND t.IsActive = 1;
                 ";
 
                 return (await _connection.QueryAsync<EngineerResponseDTO>(
@@ -112,7 +144,7 @@ namespace F1.TeamAPI.Repositories
         {
             try
             {
-                var sql = @"
+                const string sql = @"
                     UPDATE Engineer
                     SET
                         Name = @Name,
@@ -120,11 +152,11 @@ namespace F1.TeamAPI.Repositories
                         Age = @Age,
                         Experience = @Experience,
                         Type = @Type,
-                        Status = @Status,
                         TeamId = @TeamId,
                         CarId = @CarId
-                    WHERE Id = @Id
-                      AND IsActive = 1;
+                    WHERE
+                        Id = @Id
+                        AND IsActive = 1;
                 ";
 
                 await _connection.ExecuteAsync(sql, new
@@ -135,14 +167,33 @@ namespace F1.TeamAPI.Repositories
                     dto.Age,
                     dto.Experience,
                     dto.Type,
-                    dto.Status,
                     dto.TeamId,
-                    dto.CarId,
+                    dto.CarId
                 });
             }
             catch (Exception ex)
             {
                 throw new Exception("Erro ao atualizar engenheiro: " + ex.Message);
+            }
+        }
+
+        public async Task<List<EngineerHistoryResponseDTO>> GetAllEngineersHistoryAsync()
+        {
+            try
+            {
+                var sql = @"
+            SELECT Id, Experience, Type, TeamId
+            FROM Engineer";
+
+                var engineers = await _connection
+                    .QueryAsync<EngineerHistoryResponseDTO>(sql);
+
+                return engineers.ToList();
+            }
+            catch (SqlException e)
+            {
+                _logger.LogError(e, "SQL Error while retrieving engineers history");
+                throw;
             }
         }
     }
