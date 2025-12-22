@@ -47,6 +47,7 @@ namespace F1.TeamAPI.Controllers
             }
         }
         
+
         [HttpPost("createFullTeamRandom")]
         public async Task<IActionResult> CreateFullTeamRandom(CreateFullTeamRequestDTO dto)
         {
@@ -102,5 +103,35 @@ namespace F1.TeamAPI.Controllers
                 return StatusCode(500, "Internal server error");
             }
         }
+
+        [HttpGet("getPilotsFinal")]
+        public async Task<IActionResult> GetAllPilotsFinalAsync()
+        {
+            try
+            {
+                var pilots = await _teamService.GetAllPilotsFinal();
+                return Ok(pilots);
+            } catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while geting the pilot list.");
+                return StatusCode(500, "Internal server error");
+            }
+        }
+
+        [HttpGet("getTeamsFinal")]
+        public async Task<IActionResult> GetAllTeamsFinalAsync()
+        {
+            try
+            {
+                var teams = await _teamService.GetAllTeamsFinal();
+                return Ok(teams);
+            }catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while geting the team list.");
+                return StatusCode(500, "Internal server error");
+            }
+        }
+
+    
     }
 }

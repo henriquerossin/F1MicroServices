@@ -1,5 +1,7 @@
 ﻿using F1.Application.Services.Validation;
 using F1.Models.DTOs.HistoryDTOs;
+using F1.Models.DTOs.TeamDTOs.PilotDTOs;
+using F1.Models.DTOs.TeamDTOs.TeamDTOs;
 using F1.Models.Enums;
 using F1.TeamAPI.DTOs.TeamCreation;
 using F1.TeamAPI.Repositories.Interfaces;
@@ -261,10 +263,8 @@ namespace F1.TeamAPI.Services
                 await connection.CloseAsync();
 
                 _logger.LogInformation("Mensagem enviada para a fila History");
-                //await _clientRace.PostAsync("Circuit/1/Event/1", null);
 
-                //var client = _httpClientFactory.CreateClient("RaceAPI");
-                //await client.PostAsync("Circuit/1/Event/1", null);
+                //await GetAllHistoryAsync();
             }
             catch (Exception ex)
             {
@@ -386,8 +386,20 @@ namespace F1.TeamAPI.Services
             }
 
 
-
             return histories;
         }
+
+        public async Task<List<PilotResponseDTO>> GetAllPilotsFinal()
+        {
+           var pilots = await _pilotRepo.GetAllPilotsFinalAsync();
+            return pilots;
+        }
+        public async Task<List<TeamResponseDTO>> GetAllTeamsFinal()
+        {
+            var teams = await _teamRepo.GetAllTeamsFinalAsync();
+            return teams;
+        }
+
+
     }
 }

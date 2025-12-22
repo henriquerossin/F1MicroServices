@@ -333,8 +333,7 @@ namespace F1.CompetitionAPI.Services
                         {
                             //var circuits = await _repository.GetAllCircuitsActivesOrdenedAsync();
                             await _repository.StartTemp();
-
-                            await Socorro();
+                            await CallingProduceQueueHistoryAsync();
 
                             //_ = PostHistoryAsync();
                         }
@@ -353,7 +352,7 @@ namespace F1.CompetitionAPI.Services
             }
         }
 
-        public async Task Socorro()
+        public async Task CallingProduceQueueHistoryAsync()
         {
             var client = _httpClientFactory.CreateClient("TeamClient");
             await client.PostAsync("ProduceQueueHistory", null);

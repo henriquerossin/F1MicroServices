@@ -18,5 +18,6 @@ namespace F1.CompetitionAPI.Services.Interfaces
         Task<CircuitResponseDTO> GetCircuitReadyAsync();
         Task PostHistoryAsync();
         Task<bool> ValidateTeamAsync();
+        Task CallingProduceQueueHistoryAsync();
     }
 }

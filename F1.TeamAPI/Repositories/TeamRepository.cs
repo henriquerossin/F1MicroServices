@@ -1,4 +1,6 @@
 ﻿using Dapper;
+using F1.Models.DTOs.HistoryDTOs;
+using F1.Models.DTOs.TeamDTOs.PilotDTOs;
 using F1.Models.DTOs.TeamDTOs.TeamDTOs;
 using F1.TeamAPI.Data;
 using F1.TeamAPI.DTOs.TeamCreation;
@@ -56,6 +58,7 @@ namespace F1.TeamAPI.Repositories
             }
 
         }
+
 
         public async Task CreateTeamAsync(TeamRequestDTO dto)
         {
